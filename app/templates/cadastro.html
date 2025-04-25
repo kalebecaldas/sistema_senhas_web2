@@ -1,0 +1,35 @@
+{% extends "base.html" %}
+{% block title %}Cadastro{% endblock %}
+
+{% block content %}
+<h2>Cadastrar novo usuário</h2>
+
+<form method="post" class="mt-4">
+  <fieldset class="row">
+    <div class="mb-3 col-md-6">
+      <label class="form-label" for="nome">Nome</label>
+      <input type="text" name="nome" id="nome" class="form-control" required autocomplete="name">
+    </div>
+
+    <div class="mb-3 col-md-6">
+      <label class="form-label" for="email">E-mail</label>
+      <input type="email" name="email" id="email" class="form-control" required autocomplete="email">
+    </div>
+
+    <div class="mb-3 col-md-6">
+      <label class="form-label" for="senha">Senha</label>
+      <input type="password" name="senha" id="senha" class="form-control" required autocomplete="new-password">
+    </div>
+
+    <div class="mb-3 col-md-6">
+      <label class="form-label" for="tipo">Tipo de usuário</label>
+      <select name="tipo" id="tipo" class="form-select" required>
+        <option value="usuario">Usuário padrão</option>
+        <option value="admin">Administrador</option>
+      </select>
+    </div>
+  </fieldset>
+
+  <button class="btn btn-primary">Cadastrar</button>
+</form>
+{% endblock %}

@@ -1,0 +1,188 @@
+<!-- templates/display.html -->
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Display de Senhas</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+  <style>
+    html, body {
+      margin: 0; padding: 0; height: 100%;
+      background: {{ config.cor_fundo }};
+      color: {{ config.cor_texto }};
+      font-family: sans-serif;
+      overflow: hidden;
+    }
+    body { display: flex; flex-direction: column; }
+
+    .painel-container {
+      flex: 1; display: flex;
+      width: 100%; height: calc(100vh - 100px);
+    }
+    #video-lateral {
+      width: 60%; height: 100%; overflow: hidden;
+    }
+    #video-lateral video {
+      width: 100%; height: 100%; object-fit: cover;
+    }
+    .senha-coluna {
+      width: 40%; display: flex; flex-direction: column;
+      align-items: center; justify-content: space-evenly;
+      padding: .5rem 0;
+      background: {{ config.cor_fundo }};
+      border-left: 3px solid {{ config.contorno_senha }};
+      border-top: 3px solid {{ config.contorno_senha }};
+      border-bottom: 3px solid {{ config.contorno_senha }};
+    }
+    .senha-item {
+      font-size: 2.7rem;
+      border-bottom: 2px solid {{ config.linha_senha }};
+      padding: 1.1rem 0;
+      width: 100%; text-align: center;
+      background: {{ config.fundo_senha }};
+    }
+    .senha-item.ultima {
+      font-size: 3.4rem;
+      color: {{ config.destaque_senha }};
+      font-weight: bold;
+    }
+    .senha-item.ultima span {
+      animation: piscar 2s infinite; display: inline-block;
+    }
+    @keyframes piscar { 0%,100%{opacity:1;}50%{opacity:0.4;} }
+
+    .rodape-container {
+      height: 100px; background: {{ config.cor_rodape }};
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 0 2rem;
+    }
+    .logo-placeholder img { height: 80px; width: auto; }
+    .marquee-wrapper { flex: 1; overflow: hidden; margin: 0 2rem; }
+    .marquee-text {
+      white-space: nowrap; padding-left: 50%;
+      animation: marquee 26s linear infinite;
+      font-size: 2.4rem; font-weight: bold;
+      color: {{ config.cor_bemvindo }};
+    }
+    @keyframes marquee { 0% { transform: translateX(100%); } 100% { transform: translateX(-100%); } }
+
+    .hora-atual {
+      min-width: 100px; text-align: right;
+      font-size: 2.2rem; font-weight: bold;
+      color: {{ config.cor_hora }};
+    }
+
+    /* Overlay de chamada */
+    #senha-chamada {
+      position: fixed; top: 0; left: 0;
+      width: 100vw; height: 100vh;
+      background: rgba(0,0,0,0.85); color: white;
+      display: none; opacity: 0;
+      align-items: center; justify-content: center;
+      font-size: 10rem; z-index: 1000;
+      font-weight: bold; transition: opacity .4s ease;
+      text-align: center;
+    }
+    #senha-chamada.show { display: flex; opacity: 1; }
+
+    /* Overlay de reconexão */
+    #reconnect-overlay {
+      position: fixed; inset: 0;
+      background: rgba(0,0,0,0.75);
+      display: none;
+      align-items: center; justify-content: center;
+      flex-direction: column;
+      color: #fff; z-index: 1500;
+      font-size: 2rem;
+    }
+    .reconnect-progress {
+      width: 80%; max-width: 600px; margin-top: 1rem;
+      background: #333; border-radius: 5px; overflow: hidden;
+      height: 8px;
+    }
+    .reconnect-fill {
+      width: 0; height: 100%;
+      background: #ffc107;
+      animation: infinite-fill 2s linear infinite;
+    }
+    @keyframes infinite-fill {
+      0%   { width: 0; }
+      100% { width: 100%; }
+    }
+  </style>
+</head>
+<body>
+  <!-- Reconexão -->
+  <div id="reconnect-overlay">
+    <div>Conexão perdida. Aguardando o servidor...</div>
+    <div class="reconnect-progress">
+      <div class="reconnect-fill"></div>
+    </div>
+  </div>
+
+  <!-- Chamada -->
+  <div id="senha-chamada"></div>
+
+  <!-- Conteúdo -->
+  <div class="painel-container">
+    <div id="video-lateral">
+      <video autoplay muted loop>
+        <source src="{{ url_for('static', filename=config.video_path) }}" type="video/mp4" />
+      </video>
+    </div>
+    <div class="senha-coluna" id="lista-senhas"></div>
+  </div>
+
+  <!-- Rodapé -->
+  <div class="rodape-container">
+    <div class="logo-placeholder">
+      <img src="{{ url_for('static', filename=config.logo_path) }}" alt="Logo IAAM" />
+    </div>
+    <div class="marquee-wrapper">
+      <div class="marquee-text">{{ config.frase_bemvindo }}</div>
+    </div>
+    <div class="hora-atual" id="hora"></div>
+  </div>
+
+  <!-- Config -->
+  <script>
+    window.DISPLAY_CONFIG = {
+      ultimaChamadaUrl: "{{ url_for('main.ultima_chamada') }}",
+      filaJsonUrl:      "{{ url_for('main.fila_json') }}",
+      pingUrl:          "{{ url_for('main.ping') }}"
+    };
+  </script>
+
+  <!-- Reconnect logic -->
+  <script>
+    const overlay = document.getElementById('reconnect-overlay');
+    const videoEl = document.querySelector('#video-lateral video');
+    let offline = false;
+
+    async function checkServer() {
+      try {
+        const res = await fetch(window.DISPLAY_CONFIG.pingUrl, { cache: 'no-store' });
+        if (!res.ok) throw new Error();
+        if (offline) {
+          overlay.style.display = 'none';
+          videoEl && videoEl.play();
+          offline = false;
+        }
+      } catch {
+        if (!offline) {
+          offline = true;
+          overlay.style.display = 'flex';
+          videoEl && videoEl.pause();
+        }
+      }
+    }
+
+    setInterval(checkServer, 2000);
+    checkServer();
+  </script>
+
+  <!-- Display JS (versão 1.6) -->
+  <script src="{{ url_for('static', filename='js/display.js') }}?v=1.6"></script>
+</body>
+</html>

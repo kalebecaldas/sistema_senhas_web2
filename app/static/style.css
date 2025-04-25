@@ -1,0 +1,118 @@
+/* Vídeo de fundo */
+#bg-video {
+    position: fixed;
+    top: 0;
+    left: 0;
+    min-width: 100%;
+    min-height: 100%;
+    z-index: -1;
+    object-fit: cover;
+  }
+  
+  /* Sobreposição de conteúdo */
+  .overlay {
+    position: relative;
+    z-index: 1;
+    color: white;
+    text-align: center;
+    padding: 20px;
+  }
+  
+  /* Texto animado */
+  .marquee {
+    overflow: hidden;
+    white-space: nowrap;
+    box-sizing: border-box;
+  }
+  
+  .marquee span {
+    display: inline-block;
+    padding-left: 100%;
+    animation: marquee 15s linear infinite;
+    font-size: 2em;
+    font-weight: bold;
+  }
+  
+  @keyframes marquee {
+    0%   { transform: translate(0, 0); }
+    100% { transform: translate(-100%, 0); }
+  }
+  
+  /* Lista de senhas */
+  .senha-lista {
+    margin-top: 30px;
+  }
+  
+  .senha-item {
+    .senha-item {
+      font-size: 2.8rem;
+      border-bottom: 2px solid #00ffcc;
+      padding: 1rem 0;
+      width: 100%;
+      max-width: 450px;
+      text-align: center;
+      background: rgba(255, 255, 255, 0.04); /* leve contraste interno */
+      border-radius: 6px;
+    }
+    
+  }
+  
+
+  .senha-coluna {
+    width: 40%;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    gap: 12px;
+    padding: 1rem;
+    background: rgba(0, 0, 0, 0.85); /* 🔲 fundo escuro */
+    border-left: 3px solid #00ffcc; /* moldura do lado esquerdo */
+    border-top: 3px solid #00ffcc;
+    border-bottom: 3px solid #00ffcc;
+  }
+  
+  .popup.active {
+    display: flex;
+  }
+  
+
+/* Quando o dropdown estiver aberto, altera a cor do botão para fundo branco e texto preto */
+.dropdown.show > .btn-outline-light,
+.dropdown:hover > .btn-outline-light {
+  background-color: white !important;
+  color: black !important;
+  border-color: #ccc !important;
+}
+
+/* Garante que o dropdown não feche antes de clicar */
+.navbar .dropdown-menu {
+  margin-top: 0;
+  border-radius: 0;
+  border: 1px solid rgba(0,0,0,0.15);
+}
+
+
+/* 🔄 NAVBAR - Estilização de Dropdowns com transições suaves */
+.navbar .btn.btn-outline-light {
+  transition: background-color 0.2s ease, color 0.2s ease, border-color 0.2s ease;
+  background-color: transparent;
+  color: white;
+  border-color: white;
+}
+
+.navbar .btn.btn-outline-light:hover,
+.navbar .btn.btn-outline-light:focus,
+.navbar .dropdown.show > .btn.btn-outline-light {
+  background-color: rgba(255, 255, 255, 0.15);
+  color: white;
+  border-color: white;
+}
+
+/* Menu suspenso com leve sombreado e sem bordas abruptas */
+.navbar .dropdown-menu {
+  margin-top: 0;
+  border-radius: 0;
+  border: 1px solid rgba(0, 0, 0, 0.15);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}

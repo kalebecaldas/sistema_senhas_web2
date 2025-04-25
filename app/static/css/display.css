@@ -1,0 +1,111 @@
+:root {
+  --cor-fundo:   {{ config.cor_fundo }};
+  --cor-texto:   {{ config.cor_texto }};
+  --contorno:    {{ config.contorno_senha }};
+  --linha:       {{ config.linha_senha }};
+  --fundo-senha: {{ config.fundo_senha }};
+  --destaque:    {{ config.destaque_senha }};
+  --cor-rodape:  {{ config.cor_rodape }};
+  --cor-bemv:    {{ config.cor_bemvindo }};
+  --cor-hora:    {{ config.cor_hora }};
+}
+
+html, body {
+  margin: 0; padding: 0; height: 100%;
+  background: var(--cor-fundo);
+  color: var(--cor-texto);
+  font-family: sans-serif;
+  overflow: hidden;
+}
+body { display: flex; flex-direction: column; }
+
+.painel-container {
+  flex: 1; display: flex; width: 100%;
+  height: calc(100vh - 100px);
+}
+
+#video-lateral {
+  width: 60%; height: 100%; overflow: hidden;
+}
+#video-lateral video {
+  width: 100%; height: 100%; object-fit: cover;
+}
+
+.senha-coluna {
+  width: 40%; display: flex; flex-direction: column;
+  align-items: center; justify-content: space-evenly;
+  padding: 0.5rem 0;
+  background: var(--cor-fundo);
+  border-left: 3px solid var(--contorno);
+  border-top: 3px solid var(--contorno);
+  border-bottom: 3px solid var(--contorno);
+}
+
+.senha-item {
+  font-size: 2.7rem;
+  border-bottom: 2px solid var(--linha);
+  padding: 1.1rem 0;
+  width: 100%; text-align: center;
+  background: var(--fundo-senha);
+}
+.senha-item.ultima {
+  font-size: 3.4rem;
+  color: var(--destaque);
+  font-weight: bold;
+}
+.senha-item.ultima span {
+  animation: piscar 2s infinite;
+  display: inline-block;
+}
+
+@keyframes piscar {
+  0%,100% { opacity: 1; }
+  50%     { opacity: 0.4; }
+}
+
+.rodape-container {
+  height: 100px;
+  background: var(--cor-rodape);
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 0 2rem;
+}
+.logo-placeholder img {
+  height: 80px;
+  width: auto;
+}
+.marquee-wrapper {
+  flex: 1; overflow: hidden; margin: 0 2rem;
+}
+.marquee-text {
+  white-space: nowrap;
+  padding-left: 50%;
+  animation: marquee 26s linear infinite;
+  font-size: 2.4rem; font-weight: bold;
+  color: var(--cor-bemv);
+}
+@keyframes marquee {
+  0%   { transform: translateX(100%); }
+  100% { transform: translateX(-100%); }
+}
+.hora-atual {
+  min-width: 100px; text-align: right;
+  font-size: 2.2rem; font-weight: bold;
+  color: var(--cor-hora);
+}
+
+/* **Overlay de chamada ocupa a tela inteira** */
+#senha-chamada {
+  position: fixed;
+  top: 0; left: 0;
+  width: 100vw; height: 100vh;
+  background: rgba(0,0,0,0.85);
+  color: white;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  font-size: 10rem;
+  z-index: 1000;
+  font-weight: bold;
+  transition: opacity 0.4s ease;
+  text-align: center;
+}

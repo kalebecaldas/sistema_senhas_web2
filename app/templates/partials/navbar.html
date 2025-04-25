@@ -1,0 +1,69 @@
+<nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+  <div class="container-fluid">
+    {% if current_user.tipo.value == 'admin' %}
+    <form action="{{ url_for('main.painel') }}" method="GET" class="d-flex align-items-center navbar-brand mb-0 me-auto">
+      <button type="submit" class="btn btn-link text-white text-decoration-none d-flex align-items-center" style="font-size: 1.25rem;">
+        <img src="{{ url_for('static', filename=config.logo_path) }}" alt="Logo" height="30" class="me-2">
+        Sistema de Senhas
+      </button>
+    </form>
+    {% else %}
+    <a class="navbar-brand d-flex align-items-center" href="{{ url_for('main.painel') }}" data-ajax>
+      <img src="{{ url_for('static', filename=config.logo_path) }}" alt="Logo" height="30" class="me-2">
+      Sistema de Senhas
+    </a>
+    {% endif %}
+
+    <div class="collapse navbar-collapse justify-content-end" id="navbarNav">
+      <ul class="navbar-nav align-items-center">
+        <li class="nav-item text-white me-3">
+          👤 {{ current_user.nome }} ({{ 'Administrador' if current_user.tipo.value == 'admin' else 'Usuário' }})
+        </li>
+
+        {% if current_user.tipo.value == 'admin' %}
+        <!-- Usuários -->
+        <li class="nav-item dropdown me-2">
+          <a class="nav-link dropdown-toggle btn btn-sm btn-outline-light" href="#" id="dropdownUsuarios" role="button"
+             data-bs-toggle="dropdown" aria-expanded="false">
+            Usuários
+          </a>
+          <ul class="dropdown-menu" aria-labelledby="dropdownUsuarios">
+            <li><a class="dropdown-item" href="{{ url_for('main.listar_usuarios') }}" data-ajax>Listar</a></li>
+            <li><a class="dropdown-item" href="{{ url_for('main.cadastro') }}" data-ajax>Novo Cadastro</a></li>
+          </ul>
+        </li>
+
+        <!-- Relatórios -->
+        <li class="nav-item dropdown me-2">
+          <a class="nav-link dropdown-toggle btn btn-sm btn-outline-light" href="#" id="dropdownRelatorios" role="button"
+             data-bs-toggle="dropdown" aria-expanded="false">
+            Relatórios
+          </a>
+          <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="dropdownRelatorios">
+            <li><a class="dropdown-item" href="#" data-ajax>Senhas Geradas</a></li>
+            <li><a class="dropdown-item" href="#" data-ajax>Chamadas por Usuário</a></li>
+            <li><a class="dropdown-item" href="#" data-ajax>Primeira vez x Recorrentes</a></li>
+            <li><a class="dropdown-item" href="#" data-ajax>Normais x Preferenciais</a></li>
+          </ul>
+        </li>
+
+        <!-- Edição -->
+        <li class="nav-item dropdown me-2">
+          <a class="nav-link dropdown-toggle btn btn-sm btn-outline-light" href="#" id="dropdownEditar" role="button"
+             data-bs-toggle="dropdown" aria-expanded="false">
+            Editar
+          </a>
+          <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="dropdownEditar">
+            <li><a class="dropdown-item" href="{{ url_for('main.edtelas') }}" data-ajax>Display</a></li>
+            <li><a class="dropdown-item" href="{{ url_for('main.prioridade_senhas') }}" data-ajax>Prioridade Senhas</a></li>
+          </ul>
+        </li>
+        {% endif %}
+
+        <li class="nav-item">
+          <a class="btn btn-sm btn-light" href="{{ url_for('main.logout') }}">Sair</a>
+        </li>
+      </ul>
+    </div>
+  </div>
+</nav>

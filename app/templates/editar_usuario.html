@@ -1,0 +1,38 @@
+{% extends "base.html" %}
+{% block title %}Editar Usuário{% endblock %}
+
+{% block content %}
+<div class="container">
+  <h2 class="mb-4">Editar Usuário</h2>
+
+  <form method="post" class="row g-4">
+    <div class="col-md-6">
+      <label class="form-label">Nome</label>
+      <input type="text" name="nome" value="{{ usuario.nome }}" class="form-control" required>
+    </div>
+
+    <div class="col-md-6">
+      <label class="form-label">E-mail</label>
+      <input type="email" name="email" value="{{ usuario.email }}" class="form-control" required>
+    </div>
+
+    <div class="col-md-6">
+      <label class="form-label">Nova senha</label>
+      <input type="password" name="senha" class="form-control" placeholder="Deixe em branco para manter">
+    </div>
+
+    <div class="col-md-6">
+      <label class="form-label">Tipo de usuário</label>
+      <select name="tipo" class="form-select">
+        <option value="usuario" {% if usuario.tipo == 'usuario' %}selected{% endif %}>Usuário padrão</option>
+        <option value="admin" {% if usuario.tipo == 'admin' %}selected{% endif %}>Administrador</option>
+      </select>
+    </div>
+
+    <div class="col-12 d-flex justify-content-between mt-4">
+      <button class="btn btn-success">Salvar</button>
+      <a href="{{ url_for('main.listar_usuarios') }}" class="btn btn-secondary">Cancelar</a>
+    </div>
+  </form>
+</div>
+{% endblock %}

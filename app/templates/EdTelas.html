@@ -1,0 +1,94 @@
+{% extends "base.html" %}
+{% block title %}Edição de Telas{% endblock %}
+
+{% block content %}
+<div class="container">
+  <h2 class="mb-4">Configurações de Exibição</h2>
+
+  <form method="POST" action="{{ url_for('main.salvar_config') }}" enctype="multipart/form-data">
+    <div class="row g-4">
+      <div class="col-md-6">
+        <label for="logo" class="form-label">Logo do sistema:</label>
+        <input type="file" name="logo" accept="image/*" class="form-control">
+        <div class="preview-logo mt-2">
+          <img src="{{ url_for('static', filename=config.logo_path) }}" alt="Logo atual" style="max-height: 80px;">
+        </div>
+
+        <div class="form-group mt-4">
+          <label for="cor_fundo">Cor de fundo do display:</label>
+          <input type="color" name="cor_fundo" value="{{ config.cor_fundo }}" class="form-control form-control-color">
+        </div>
+
+        <div class="form-group mt-3">
+          <label for="cor_texto">Cor do texto da senha:</label>
+          <input type="color" name="cor_texto" value="{{ config.cor_texto }}" class="form-control form-control-color">
+        </div>
+
+        <div class="form-group mt-3">
+          <label for="cor_rodape">Cor do rodapé:</label>
+          <input type="color" name="cor_rodape" value="{{ config.cor_rodape }}" class="form-control form-control-color">
+        </div>
+
+        <div class="form-group mt-3">
+          <label for="contorno_senha">Cor do contorno do painel de senhas:</label>
+          <input type="color" name="contorno_senha" value="{{ config.contorno_senha }}" class="form-control form-control-color">
+        </div>
+
+        <div class="form-group mt-3">
+          <label for="linha_senha">Cor da linha entre senhas:</label>
+          <input type="color" name="linha_senha" value="{{ config.linha_senha }}" class="form-control form-control-color">
+        </div>
+      </div>
+
+      <div class="col-md-6">
+        <div class="form-group">
+          <label for="fundo_senha">Fundo de cada item de senha:</label>
+          <input type="color" name="fundo_senha" value="{{ config.fundo_senha }}" class="form-control form-control-color">
+        </div>
+
+        <div class="form-group mt-3">
+          <label for="destaque_senha">Cor da senha destacada:</label>
+          <input type="color" name="destaque_senha" value="{{ config.destaque_senha }}" class="form-control form-control-color">
+        </div>
+
+        <div class="form-group mt-3">
+          <label for="cor_bemvindo">Cor do texto de boas-vindas:</label>
+          <input type="color" name="cor_bemvindo" value="{{ config.cor_bemvindo }}" class="form-control form-control-color">
+        </div>
+
+        <div class="form-group mt-3">
+          <label for="frase_bemvindo">Frase de boas-vindas:</label>
+          <input type="text" name="frase_bemvindo" value="{{ config.frase_bemvindo }}" class="form-control">
+        </div>
+
+        <div class="form-group mt-3">
+          <label for="cor_hora">Cor da hora atual:</label>
+          <input type="color" name="cor_hora" value="{{ config.cor_hora }}" class="form-control form-control-color">
+          <div class="form-group mt-3">
+            <label for="voz_azure">Voz usada nas chamadas:</label>
+            <select name="voz_azure" class="form-select">
+              <option value="pt-BR-FranciscaNeural" {% if config.voz_azure == 'pt-BR-FranciscaNeural' %}selected{% endif %}>Francisca (feminina)</option>
+              <option value="pt-BR-AntonioNeural" {% if config.voz_azure == 'pt-BR-AntonioNeural' %}selected{% endif %}>Antonio (masculina)</option>
+              <option value="pt-BR-BrendaNeural" {% if config.voz_azure == 'pt-BR-BrendaNeural' %}selected{% endif %}>Brenda (feminina)</option>
+              <option value="pt-BR-DanielNeural" {% if config.voz_azure == 'pt-BR-DanielNeural' %}selected{% endif %}>Daniel (masculina)</option>
+            </select>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="form-group mt-4">
+      <label for="video">Vídeo de fundo:</label>
+      <input type="file" name="video" accept="video/*" class="form-control">
+      <div class="preview-video mt-2">
+        <video src="{{ url_for('static', filename=config.video_path) }}" muted autoplay loop style="max-height: 80px;"></video>
+      </div>
+    </div>
+
+    <div class="d-flex flex-column flex-sm-row justify-content-between mt-4 gap-3">
+      <button type="submit" class="btn btn-primary">Salvar Configurações</button>
+      <button type="submit" name="reset_cores" value="1" class="btn btn-secondary">Cores Padrão</button>
+    </div>
+  </form>
+</div>
+{% endblock %}

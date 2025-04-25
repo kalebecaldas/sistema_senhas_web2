@@ -1,0 +1,126 @@
+<script>
+  function inicializarDropdowns() {
+    document.querySelectorAll('.dropdown').forEach(dropdown => {
+      const toggle = dropdown.querySelector('[data-bs-toggle="dropdown"]');
+      const menu = dropdown.querySelector('.dropdown-menu');
+      const bsInstance = bootstrap.Dropdown.getOrCreateInstance(toggle);
+
+      let timer;
+      dropdown.addEventListener('mouseenter', () => {
+        clearTimeout(timer);
+        bsInstance.show();
+      });
+      dropdown.addEventListener('mouseleave', () => {
+        timer = setTimeout(() => {
+          bsInstance.hide();
+        }, 300);
+      });
+      toggle.addEventListener('click', e => {
+        e.preventDefault();
+        bsInstance.toggle();
+      });
+    });
+  }
+
+  async function carregarPaginaAjax(href) {
+    try {
+      const res = await fetch(href, {
+        headers: { "X-Requested-With": "XMLHttpRequest" }
+      });
+      const html = await res.text();
+      const parser = new DOMParser();
+      const doc = parser.parseFromString(html, "text/html");
+      const novoConteudo = doc.querySelector("#ajax-content");
+
+      if (novoConteudo) {
+        document.querySelector("#ajax-content").innerHTML = novoConteudo.innerHTML;
+        history.pushState(null, "", href);
+        window.scrollTo({ top: 0, behavior: "smooth" });
+
+        doc.querySelectorAll("script").forEach(s => {
+          const sc = document.createElement("script");
+          if (s.src) {
+            const sep = s.src.includes('?') ? '&' : '?';
+            sc.src = s.src + sep + 'v=' + Date.now();
+            sc.defer = true;
+          } else {
+            sc.textContent = s.textContent;
+            sc.defer = true;
+          }
+          document.body.appendChild(sc);
+        });
+
+        setTimeout(() => {
+          if (typeof inicializarPainel === 'function') inicializarPainel();
+          if (typeof atualizarFila === 'function') atualizarFila();
+          if (typeof inicializarDropdowns === 'function') inicializarDropdowns();
+        }, 150);
+      } else {
+        window.location.href = href;
+      }
+    } catch (err) {
+      console.error("Erro AJAX:", err);
+      flashToast("Servidor inacessível. Aguardando reconexão...", "warning");
+      // mantém na mesma página sem recarregar
+    }
+  }
+
+  document.addEventListener("DOMContentLoaded", () => {
+    inicializarDropdowns();
+    const ignorarAjax = ['/logout', '/display', '/retira'];
+
+    document.body.addEventListener("click", function (e) {
+      const link = e.target.closest("a[data-ajax]");
+      if (!link) return;
+      const href = link.getAttribute("href");
+      if (ignorarAjax.some(path => href.includes(path))) return;
+
+      e.preventDefault();
+      carregarPaginaAjax(href);
+    });
+  });
+
+  window.addEventListener("popstate", () => {
+    carregarPaginaAjax(location.href);
+  });
+</script>
+
+<script>
+  // ⏳ Logout automático após 15 minutos de inatividade
+  let tempoInatividade = 1000 * 60 * 15;
+  let timeoutLogout;
+  function reiniciarTimerInatividade() {
+    clearTimeout(timeoutLogout);
+    timeoutLogout = setTimeout(() => {
+      flashToast("⏳ Você ficou inativo por muito tempo. Será deslogado por segurança.", "warning");
+      setTimeout(() => {
+        window.location.href = "{{ url_for('main.logout') }}";
+      }, 1000);
+    }, tempoInatividade);
+  }
+  ['mousemove', 'keydown', 'click', 'scroll'].forEach(evento => {
+    document.addEventListener(evento, reiniciarTimerInatividade);
+  });
+  reiniciarTimerInatividade();
+
+  // functor de toasts
+  function flashToast(msg, type = 'info') {
+    const container = document.getElementById('notification-container');
+    if (!container) return console.warn('Container de toasts não encontrado');
+    const toast = document.createElement('div');
+    toast.className = `alert alert-${type} alert-dismissible fade show`;
+    toast.role = 'alert';
+    toast.innerHTML = `
+      ${msg}
+      <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    `;
+    container.appendChild(toast);
+
+    // Remove após 4s
+    setTimeout(() => {
+      toast.classList.remove('show');
+      toast.classList.add('hide');
+      toast.addEventListener('transitionend', () => toast.remove());
+    }, 4000);
+  }
+</script>
