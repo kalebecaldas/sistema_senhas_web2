@@ -1,26 +1,64 @@
 {% extends "base.html" %}
-{% block title %}Login{% endblock %}
+{% block title %}Login - Sistema de Senhas{% endblock %}
 
 {% block content %}
-<div class="d-flex justify-content-center align-items-center" style="min-height: 70vh;">
-  <div class="card shadow p-4" style="min-width: 320px; max-width: 400px; width: 100%;">
-    <h4 class="text-center mb-4">Acesso ao Sistema</h4>
-
-    <form method="post">
-      <div class="mb-3">
-        <label class="form-label">E-mail</label>
-        <input name="email" type="email" class="form-control" placeholder="Digite seu e-mail" required>
+<div class="container-fluid min-vh-100 d-flex flex-column justify-content-center align-items-center" style="background: #f8fafc;">
+  <div class="row justify-content-center w-100">
+    <div class="col-lg-4 col-md-6 col-sm-10">
+      <!-- Título do Sistema -->
+      <div class="text-center mb-4">
+        <h1 class="fw-bold text-primary" style="letter-spacing: -1px; font-size: 2.2rem;">Sistema de Senhas</h1>
       </div>
-
-      <div class="mb-3">
-        <label class="form-label">Senha</label>
-        <input name="senha" type="password" class="form-control" placeholder="Digite sua senha" required>
+      <!-- Card de Login -->
+      <div class="card shadow-sm border-0">
+        <div class="card-body p-4">
+          <form method="post" autocomplete="off">
+            <div class="mb-3">
+              <label for="email" class="form-label fw-medium">E-mail</label>
+              <div class="input-group">
+                <span class="input-group-text"><i class="fas fa-envelope"></i></span>
+                <input type="email" class="form-control" id="email" name="email" placeholder="Digite seu e-mail" required autofocus>
+              </div>
+            </div>
+            <div class="mb-3">
+              <label for="senha" class="form-label fw-medium">Senha</label>
+              <div class="input-group">
+                <span class="input-group-text"><i class="fas fa-lock"></i></span>
+                <input type="password" class="form-control" id="senha" name="senha" placeholder="Digite sua senha" required>
+                <button class="btn btn-outline-secondary" type="button" id="toggle-password" tabindex="-1" title="Mostrar/Ocultar senha">
+                  <i class="fas fa-eye"></i>
+                </button>
+              </div>
+            </div>
+            {% with messages = get_flashed_messages() %}
+              {% if messages %}
+                <div class="alert alert-danger mt-3" role="alert">
+                  {{ messages[0] }}
+                </div>
+              {% endif %}
+            {% endwith %}
+            <div class="d-grid mt-4">
+              <button type="submit" class="btn btn-primary btn-lg d-flex align-items-center justify-content-center gap-2">
+                <i class="fas fa-sign-in-alt"></i>
+                <span>Entrar</span>
+              </button>
+            </div>
+          </form>
+        </div>
       </div>
-
-      <div class="d-grid">
-        <button class="btn btn-primary" type="submit">Entrar</button>
-      </div>
-    </form>
+    </div>
   </div>
 </div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+  const senhaInput = document.getElementById('senha');
+  const toggleBtn = document.getElementById('toggle-password');
+  toggleBtn.addEventListener('click', function() {
+    const type = senhaInput.type === 'password' ? 'text' : 'password';
+    senhaInput.type = type;
+    this.innerHTML = type === 'password' ? '<i class="fas fa-eye"></i>' : '<i class="fas fa-eye-slash"></i>';
+  });
+});
+</script>
 {% endblock %}

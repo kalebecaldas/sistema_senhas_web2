@@ -1,94 +1,563 @@
 {% extends "base.html" %}
-{% block title %}Edição de Telas{% endblock %}
+{% block title %}Configurações de Display{% endblock %}
 
 {% block content %}
-<div class="container">
-  <h2 class="mb-4">Configurações de Exibição</h2>
+<div class="container-fluid" style="padding-bottom: 2.5rem;">
+  <!-- Header -->
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+      <h2 class="fw-bold text-primary mb-1">
+        <i class="fas fa-tv me-2"></i>Configurações de Display
+      </h2>
+      <p class="text-muted mb-0">Personalize a aparência e comportamento do sistema</p>
+    </div>
+    <div class="d-flex align-items-center gap-2">
+      <a href="{{ url_for('main.display') }}" target="_blank" class="btn btn-outline-primary d-flex align-items-center gap-2">
+        <i class="fas fa-external-link-alt"></i>
+        <span>Visualizar Display</span>
+      </a>
+      <!-- Botões de ação movidos para o topo -->
+      <button type="submit" name="reset_cores" value="1" form="config-form" class="btn btn-outline-secondary d-flex align-items-center gap-2 ms-2">
+        <i class="fas fa-undo"></i>
+        <span>Cores Padrão</span>
+      </button>
+      <button type="submit" form="config-form" class="btn btn-primary btn-lg d-flex align-items-center gap-2 ms-2">
+        <i class="fas fa-save"></i>
+        <span>Salvar Configurações</span>
+      </button>
+    </div>
+  </div>
 
-  <form method="POST" action="{{ url_for('main.salvar_config') }}" enctype="multipart/form-data">
+  <form method="POST" action="{{ url_for('main.salvar_config') }}" enctype="multipart/form-data" id="config-form">
     <div class="row g-4">
-      <div class="col-md-6">
-        <label for="logo" class="form-label">Logo do sistema:</label>
-        <input type="file" name="logo" accept="image/*" class="form-control">
-        <div class="preview-logo mt-2">
-          <img src="{{ url_for('static', filename=config.logo_path) }}" alt="Logo atual" style="max-height: 80px;">
-        </div>
+      <!-- Logo e Mídia -->
+      <div class="col-lg-6">
+        <div class="card shadow-sm border-0 h-100">
+          <div class="card-header bg-light border-0">
+            <h5 class="card-title mb-0">
+              <i class="fas fa-image me-2 text-primary"></i>Logo e Mídia
+            </h5>
+          </div>
+          <div class="card-body">
+            <!-- Logo -->
+            <div class="mb-4">
+              <label for="logo" class="form-label fw-medium">
+                <i class="fas fa-image me-1"></i>Logo do Sistema
+              </label>
+              <input type="file" name="logo" accept="image/*" class="form-control" id="logo">
+              <div class="form-text">
+                <i class="fas fa-info-circle me-1"></i>
+                Formatos aceitos: PNG, JPG, GIF (máx. 2MB)
+              </div>
+              
+              <!-- Preview Logo -->
+              <div class="mt-3 p-3 border rounded bg-light">
+                <label class="form-label small text-muted">Logo Atual:</label>
+                <div class="d-flex align-items-center">
+                  <img src="{{ url_for('static', filename=config.logo_path) }}" 
+                       alt="Logo atual" 
+                       class="me-3" 
+                       style="max-height: 60px; max-width: 200px; object-fit: contain;">
+                  <div class="small text-muted">
+                    <div><strong>Arquivo:</strong> {{ config.logo_path.split('/')[-1] }}</div>
+                    <div><strong>Dimensões:</strong> <span id="logo-dimensions">Carregando...</span></div>
+                  </div>
+                </div>
+              </div>
+            </div>
 
-        <div class="form-group mt-4">
-          <label for="cor_fundo">Cor de fundo do display:</label>
-          <input type="color" name="cor_fundo" value="{{ config.cor_fundo }}" class="form-control form-control-color">
-        </div>
-
-        <div class="form-group mt-3">
-          <label for="cor_texto">Cor do texto da senha:</label>
-          <input type="color" name="cor_texto" value="{{ config.cor_texto }}" class="form-control form-control-color">
-        </div>
-
-        <div class="form-group mt-3">
-          <label for="cor_rodape">Cor do rodapé:</label>
-          <input type="color" name="cor_rodape" value="{{ config.cor_rodape }}" class="form-control form-control-color">
-        </div>
-
-        <div class="form-group mt-3">
-          <label for="contorno_senha">Cor do contorno do painel de senhas:</label>
-          <input type="color" name="contorno_senha" value="{{ config.contorno_senha }}" class="form-control form-control-color">
-        </div>
-
-        <div class="form-group mt-3">
-          <label for="linha_senha">Cor da linha entre senhas:</label>
-          <input type="color" name="linha_senha" value="{{ config.linha_senha }}" class="form-control form-control-color">
+            <!-- Vídeo de Fundo -->
+            <div class="mb-4">
+              <label for="video" class="form-label fw-medium">
+                <i class="fas fa-video me-1"></i>Vídeo de Fundo
+              </label>
+              <input type="file" name="video" accept="video/*" class="form-control" id="video">
+              <div class="form-text">
+                <i class="fas fa-info-circle me-1"></i>
+                Formatos aceitos: MP4, AVI, MOV (máx. 10MB)
+              </div>
+              
+              <!-- Preview Vídeo -->
+              <div class="mt-3 p-3 border rounded bg-light">
+                <label class="form-label small text-muted">Vídeo Atual:</label>
+                <div class="d-flex align-items-center">
+                  <video src="{{ url_for('static', filename=config.video_path) }}" 
+                         muted 
+                         style="max-height: 60px; max-width: 200px; object-fit: cover;"
+                         class="me-3">
+                  </video>
+                  <div class="small text-muted">
+                    <div><strong>Arquivo:</strong> {{ config.video_path.split('/')[-1] }}</div>
+                    <div><strong>Duração:</strong> <span id="video-duration">Carregando...</span></div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
 
-      <div class="col-md-6">
-        <div class="form-group">
-          <label for="fundo_senha">Fundo de cada item de senha:</label>
-          <input type="color" name="fundo_senha" value="{{ config.fundo_senha }}" class="form-control form-control-color">
-        </div>
+      <!-- Cores do Sistema -->
+      <div class="col-lg-6">
+        <div class="card shadow-sm border-0 h-100">
+          <div class="card-header bg-light border-0">
+            <h5 class="card-title mb-0">
+              <i class="fas fa-palette me-2 text-primary"></i>Paleta de Cores
+            </h5>
+          </div>
+          <div class="card-body">
+            <div class="row g-3">
+              <!-- Cor de Fundo -->
+              <div class="col-md-6">
+                <label for="cor_fundo" class="form-label fw-medium">
+                  <i class="fas fa-fill-drip me-1"></i>Cor de Fundo
+                </label>
+                <div class="input-group">
+                  <input type="color" name="cor_fundo" value="{{ config.cor_fundo }}" 
+                         class="form-control form-control-color" id="cor_fundo">
+                  <span class="input-group-text">{{ config.cor_fundo }}</span>
+                </div>
+                <div class="form-text">
+                  <i class="fas fa-info-circle me-1"></i>
+                  Cor principal do fundo do display
+                </div>
+              </div>
 
-        <div class="form-group mt-3">
-          <label for="destaque_senha">Cor da senha destacada:</label>
-          <input type="color" name="destaque_senha" value="{{ config.destaque_senha }}" class="form-control form-control-color">
-        </div>
+              <!-- Cor do Texto -->
+              <div class="col-md-6">
+                <label for="cor_texto" class="form-label fw-medium">
+                  <i class="fas fa-font me-1"></i>Cor do Texto
+                </label>
+                <div class="input-group">
+                  <input type="color" name="cor_texto" value="{{ config.cor_texto }}" 
+                         class="form-control form-control-color" id="cor_texto">
+                  <span class="input-group-text">{{ config.cor_texto }}</span>
+                </div>
+                <div class="form-text">
+                  <i class="fas fa-info-circle me-1"></i>
+                  Cor do texto das senhas
+                </div>
+              </div>
 
-        <div class="form-group mt-3">
-          <label for="cor_bemvindo">Cor do texto de boas-vindas:</label>
-          <input type="color" name="cor_bemvindo" value="{{ config.cor_bemvindo }}" class="form-control form-control-color">
-        </div>
+              <!-- Cor do Rodapé -->
+              <div class="col-md-6">
+                <label for="cor_rodape" class="form-label fw-medium">
+                  <i class="fas fa-window-minimize me-1"></i>Cor do Rodapé
+                </label>
+                <div class="input-group">
+                  <input type="color" name="cor_rodape" value="{{ config.cor_rodape }}" 
+                         class="form-control form-control-color" id="cor_rodape">
+                  <span class="input-group-text">{{ config.cor_rodape }}</span>
+                </div>
+                <div class="form-text">
+                  <i class="fas fa-info-circle me-1"></i>
+                  Cor da barra inferior
+                </div>
+              </div>
 
-        <div class="form-group mt-3">
-          <label for="frase_bemvindo">Frase de boas-vindas:</label>
-          <input type="text" name="frase_bemvindo" value="{{ config.frase_bemvindo }}" class="form-control">
-        </div>
+              <!-- Cor do Contorno -->
+              <div class="col-md-6">
+                <label for="contorno_senha" class="form-label fw-medium">
+                  <i class="fas fa-square me-1"></i>Contorno das Senhas
+                </label>
+                <div class="input-group">
+                  <input type="color" name="contorno_senha" value="{{ config.contorno_senha }}" 
+                         class="form-control form-control-color" id="contorno_senha">
+                  <span class="input-group-text">{{ config.contorno_senha }}</span>
+                </div>
+                <div class="form-text">
+                  <i class="fas fa-info-circle me-1"></i>
+                  Borda dos painéis de senha e sublinhado do título
+                </div>
+              </div>
 
-        <div class="form-group mt-3">
-          <label for="cor_hora">Cor da hora atual:</label>
-          <input type="color" name="cor_hora" value="{{ config.cor_hora }}" class="form-control form-control-color">
-          <div class="form-group mt-3">
-            <label for="voz_azure">Voz usada nas chamadas:</label>
-            <select name="voz_azure" class="form-select">
-              <option value="pt-BR-FranciscaNeural" {% if config.voz_azure == 'pt-BR-FranciscaNeural' %}selected{% endif %}>Francisca (feminina)</option>
-              <option value="pt-BR-AntonioNeural" {% if config.voz_azure == 'pt-BR-AntonioNeural' %}selected{% endif %}>Antonio (masculina)</option>
-              <option value="pt-BR-BrendaNeural" {% if config.voz_azure == 'pt-BR-BrendaNeural' %}selected{% endif %}>Brenda (feminina)</option>
-              <option value="pt-BR-DanielNeural" {% if config.voz_azure == 'pt-BR-DanielNeural' %}selected{% endif %}>Daniel (masculina)</option>
-            </select>
+              <!-- Cor da Linha -->
+              <div class="col-md-6">
+                <label for="linha_senha" class="form-label fw-medium">
+                  <i class="fas fa-minus me-1"></i>Linha entre Senhas
+                </label>
+                <div class="input-group">
+                  <input type="color" name="linha_senha" value="{{ config.linha_senha }}" 
+                         class="form-control form-control-color" id="linha_senha">
+                  <span class="input-group-text">{{ config.linha_senha }}</span>
+                </div>
+                <div class="form-text">
+                  <i class="fas fa-info-circle me-1"></i>
+                  Cor da borda dos itens de senha
+                </div>
+              </div>
+
+              <!-- Texto de Boas-vindas -->
+              <div class="col-md-6">
+                <label for="cor_bemvindo" class="form-label fw-medium">
+                  <i class="fas fa-hand-wave me-1"></i>Texto de Boas-vindas
+                </label>
+                <div class="input-group">
+                  <input type="color" name="cor_bemvindo" value="{{ config.cor_bemvindo }}" 
+                         class="form-control form-control-color" id="cor_bemvindo">
+                  <span class="input-group-text">{{ config.cor_bemvindo }}</span>
+                </div>
+                <div class="form-text">
+                  <i class="fas fa-info-circle me-1"></i>
+                  Cor da mensagem de boas-vindas e do título
+                </div>
+              </div>
+
+              <!-- Cor da Hora -->
+              <div class="col-md-6">
+                <label for="cor_hora" class="form-label fw-medium">
+                  <i class="fas fa-clock me-1"></i>Cor da Hora
+                </label>
+                <div class="input-group">
+                  <input type="color" name="cor_hora" value="{{ config.cor_hora }}" 
+                         class="form-control form-control-color" id="cor_hora">
+                  <span class="input-group-text">{{ config.cor_hora }}</span>
+                </div>
+                <div class="form-text">
+                  <i class="fas fa-info-circle me-1"></i>
+                  Cor do relógio digital
+                </div>
+              </div>
+
+              <!-- AVISO SOBRE FUNDO DAS SENHAS -->
+              <div class="col-12">
+                <div class="alert alert-info alert-permanent mt-2 mb-0 p-2 small">
+                  <i class="fas fa-info-circle me-1"></i>
+                  O fundo dos itens de senha e da senha destacada são fixos no display (gradiente escuro e vermelho escuro, respectivamente).
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Textos e Voz -->
+      <div class="col-lg-6">
+        <div class="card shadow-sm border-0">
+          <div class="card-header bg-light border-0">
+            <h5 class="card-title mb-0">
+              <i class="fas fa-comments me-2 text-primary"></i>Textos e Voz
+            </h5>
+          </div>
+          <div class="card-body">
+            <!-- Frase de Boas-vindas -->
+            <div class="mb-4">
+              <label for="frase_bemvindo" class="form-label fw-medium">
+                <i class="fas fa-quote-left me-1"></i>Frase de Boas-vindas
+              </label>
+              <input type="text" name="frase_bemvindo" value="{{ config.frase_bemvindo }}" 
+                     class="form-control form-control-lg" id="frase_bemvindo"
+                     placeholder="Ex: Bem-vindo ao nosso estabelecimento">
+              <div class="form-text">
+                <i class="fas fa-info-circle me-1"></i>
+                Mensagem exibida na tela de boas-vindas
+              </div>
+            </div>
+
+            <!-- Voz Azure -->
+            <div class="mb-4">
+              <label for="voz_azure" class="form-label fw-medium">
+                <i class="fas fa-microphone me-1"></i>Voz para Chamadas
+              </label>
+              <select name="voz_azure" class="form-select form-select-lg" id="voz_azure">
+                <option value="pt-BR-FranciscaNeural" {% if config.voz_azure == 'pt-BR-FranciscaNeural' %}selected{% endif %}>
+                  <i class="fas fa-female me-2"></i>Francisca (Feminina - Natural)
+                </option>
+                <option value="pt-BR-AntonioNeural" {% if config.voz_azure == 'pt-BR-AntonioNeural' %}selected{% endif %}>
+                  <i class="fas fa-male me-2"></i>Antonio (Masculina - Natural)
+                </option>
+                <option value="pt-BR-BrendaNeural" {% if config.voz_azure == 'pt-BR-BrendaNeural' %}selected{% endif %}>
+                  <i class="fas fa-female me-2"></i>Brenda (Feminina - Suave)
+                </option>
+                <option value="pt-BR-DanielNeural" {% if config.voz_azure == 'pt-BR-DanielNeural' %}selected{% endif %}>
+                  <i class="fas fa-male me-2"></i>Daniel (Masculina - Profissional)
+                </option>
+              </select>
+              <div class="form-text">
+                <i class="fas fa-info-circle me-1"></i>
+                Voz utilizada nas chamadas de senha
+              </div>
+              
+              <!-- Teste de Voz -->
+              <div class="mt-3">
+                <button type="button" class="btn btn-outline-primary btn-sm" id="teste-voz">
+                  <i class="fas fa-play me-1"></i>Testar Voz
+                </button>
+                <div class="form-text">
+                  <i class="fas fa-info-circle me-1"></i>
+                  Clique para ouvir um exemplo da voz selecionada
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Preview -->
+      <div class="col-lg-6">
+        <div class="card shadow-sm border-0">
+          <div class="card-header bg-light border-0">
+            <h5 class="card-title mb-0">
+              <i class="fas fa-eye me-2 text-primary"></i>Preview das Cores
+            </h5>
+          </div>
+          <div class="card-body">
+            <div class="preview-container p-3 rounded" id="preview-container" 
+                 style="background-color: {{ config.cor_fundo }}; color: {{ config.cor_texto }}; border: 2px solid {{ config.contorno_senha }};">
+              <div class="text-center mb-3">
+                <h6 style="color: {{ config.cor_bemvindo }};">{{ config.frase_bemvindo or 'Bem-vindo!' }}</h6>
+                <div style="color: {{ config.cor_hora }};">14:30:25</div>
+              </div>
+              
+              <div class="senha-item mb-2 p-2 rounded" 
+                   style="background: linear-gradient(135deg, #23272f 60%, #11131a 100%); border-bottom: 1px solid {{ config.linha_senha }};">
+                <div class="d-flex justify-content-between align-items-center">
+                  <span class="fw-bold">A001</span>
+                  <span class="badge bg-secondary">Normal</span>
+                </div>
+              </div>
+              
+              <div class="senha-item mb-2 p-2 rounded" 
+                   style="background: linear-gradient(135deg, #b91c1c 60%, #7f1d1d 100%); border-bottom: 1px solid {{ config.linha_senha }};">
+                <div class="d-flex justify-content-between align-items-center">
+                  <span class="fw-bold">P002</span>
+                  <span class="badge bg-warning">Preferencial</span>
+                </div>
+              </div>
+              
+              <div class="senha-item p-2 rounded" 
+                   style="background: linear-gradient(135deg, #23272f 60%, #11131a 100%); border-bottom: 1px solid {{ config.linha_senha }};">
+                <div class="d-flex justify-content-between align-items-center">
+                  <span class="fw-bold">A003</span>
+                  <span class="badge bg-secondary">Normal</span>
+                </div>
+              </div>
+            </div>
+            
+            <div class="form-text mt-2">
+              <i class="fas fa-info-circle me-1"></i>
+              Preview em tempo real das configurações de cor
+            </div>
           </div>
         </div>
       </div>
     </div>
-
-    <div class="form-group mt-4">
-      <label for="video">Vídeo de fundo:</label>
-      <input type="file" name="video" accept="video/*" class="form-control">
-      <div class="preview-video mt-2">
-        <video src="{{ url_for('static', filename=config.video_path) }}" muted autoplay loop style="max-height: 80px;"></video>
-      </div>
-    </div>
-
-    <div class="d-flex flex-column flex-sm-row justify-content-between mt-4 gap-3">
-      <button type="submit" class="btn btn-primary">Salvar Configurações</button>
-      <button type="submit" name="reset_cores" value="1" class="btn btn-secondary">Cores Padrão</button>
-    </div>
   </form>
 </div>
+
+<!-- Success Toast -->
+<div class="toast-container position-fixed bottom-0 end-0 p-3">
+  <div id="success-toast" class="toast align-items-center text-white bg-success border-0" role="alert">
+    <div class="d-flex">
+      <div class="toast-body">
+        <i class="fas fa-check-circle me-2"></i>
+        Configurações salvas com sucesso!
+      </div>
+      <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
+    </div>
+  </div>
+</div>
+
+<style>
+/* Card Improvements */
+.card {
+  border-radius: 12px;
+  transition: all 0.2s ease;
+}
+
+.card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(0,0,0,0.1) !important;
+}
+
+/* Form Controls */
+.form-control, .form-select {
+  border-radius: 8px;
+  border: 2px solid #e9ecef;
+  transition: all 0.2s ease;
+}
+
+.form-control:focus, .form-select:focus {
+  border-color: #0d6efd;
+  box-shadow: 0 0 0 0.2rem rgba(13, 110, 253, 0.25);
+}
+
+/* Color Inputs */
+.form-control-color {
+  width: 60px;
+  height: 40px;
+  border-radius: 8px;
+}
+
+/* Buttons */
+.btn {
+  border-radius: 8px;
+  font-weight: 500;
+  transition: all 0.2s ease;
+}
+
+.btn:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+}
+
+/* Preview Container */
+.preview-container {
+  min-height: 200px;
+  transition: all 0.3s ease;
+}
+
+.senha-item {
+  transition: all 0.2s ease;
+}
+
+/* Toast */
+.toast {
+  border-radius: 8px;
+  box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .d-flex.justify-content-between {
+    flex-direction: column;
+    gap: 1rem;
+  }
+  
+  .btn {
+    width: 100%;
+  }
+}
+</style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+  const form = document.getElementById('config-form');
+  const colorInputs = document.querySelectorAll('input[type="color"]');
+  const previewContainer = document.getElementById('preview-container');
+  const testeVozBtn = document.getElementById('teste-voz');
+  
+  // Update preview when colors change
+  function updatePreview() {
+    const corFundo = document.getElementById('cor_fundo').value;
+    const corTexto = document.getElementById('cor_texto').value;
+    const corContorno = document.getElementById('contorno_senha').value;
+    const corBemvindo = document.getElementById('cor_bemvindo').value;
+    const corHora = document.getElementById('cor_hora').value;
+    const corLinha = document.getElementById('linha_senha').value;
+    
+    previewContainer.style.backgroundColor = corFundo;
+    previewContainer.style.color = corTexto;
+    previewContainer.style.borderColor = corContorno;
+    
+    // Update preview elements
+    const bemvindoText = previewContainer.querySelector('h6');
+    const horaText = previewContainer.querySelector('div[style*="color"]');
+    const senhaItems = previewContainer.querySelectorAll('.senha-item');
+    
+    bemvindoText.style.color = corBemvindo;
+    horaText.style.color = corHora;
+    
+    senhaItems.forEach((item, index) => {
+      // Fundo fixo igual ao display
+      if (index === 1) { // Highlighted item
+        item.style.background = 'linear-gradient(135deg, #b91c1c 60%, #7f1d1d 100%)';
+      } else {
+        item.style.background = 'linear-gradient(135deg, #23272f 60%, #11131a 100%)';
+      }
+      item.style.borderBottomColor = corLinha;
+    });
+  }
+  
+  // Add event listeners to color inputs
+  colorInputs.forEach(input => {
+    input.addEventListener('input', updatePreview);
+    input.addEventListener('change', function() {
+      // Update the text display next to color input
+      const textSpan = this.parentElement.querySelector('.input-group-text');
+      if (textSpan) {
+        textSpan.textContent = this.value;
+      }
+    });
+  });
+  
+  // Test voice functionality
+  testeVozBtn.addEventListener('click', function() {
+    const vozSelecionada = document.getElementById('voz_azure').value;
+    const textoTeste = 'Teste de voz do sistema de senhas';
+    
+    // Show loading state
+    const originalText = this.innerHTML;
+    this.innerHTML = '<i class="fas fa-spinner fa-spin me-1"></i>Testando...';
+    this.disabled = true;
+    
+    // Make TTS request
+    fetch(`/tts_audio?texto=${encodeURIComponent(textoTeste)}&voz=${vozSelecionada}`)
+      .then(response => {
+        if (response.ok) {
+          return response.blob();
+        }
+        throw new Error('Erro ao testar voz');
+      })
+      .then(blob => {
+        const audio = new Audio(URL.createObjectURL(blob));
+        audio.play();
+      })
+      .catch(error => {
+        console.error('Erro:', error);
+        alert('Erro ao testar voz. Verifique a conexão.');
+      })
+      .finally(() => {
+        this.innerHTML = originalText;
+        this.disabled = false;
+      });
+  });
+  
+  // Form submission
+  form.addEventListener('submit', function(event) {
+    // Show loading state
+    const submitBtn = form.querySelector('button[type="submit"]:not([name="reset_cores"])');
+    if (submitBtn) {
+      const originalText = submitBtn.innerHTML;
+      submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Salvando...';
+      submitBtn.disabled = true;
+      
+      // Re-enable after a delay (in case of error)
+      setTimeout(() => {
+        submitBtn.innerHTML = originalText;
+        submitBtn.disabled = false;
+      }, 5000);
+    }
+  });
+  
+  // Initialize preview
+  updatePreview();
+  
+  // Load file information
+  function loadFileInfo() {
+    // Logo dimensions
+    const logoImg = document.querySelector('img[src*="logo"]');
+    if (logoImg) {
+      logoImg.onload = function() {
+        document.getElementById('logo-dimensions').textContent = 
+          `${this.naturalWidth}x${this.naturalHeight}px`;
+      };
+    }
+    
+    // Video duration
+    const videoElement = document.querySelector('video');
+    if (videoElement) {
+      videoElement.addEventListener('loadedmetadata', function() {
+        const duration = Math.round(this.duration);
+        const minutes = Math.floor(duration / 60);
+        const seconds = duration % 60;
+        document.getElementById('video-duration').textContent = 
+          `${minutes}:${seconds.toString().padStart(2, '0')}`;
+      });
+    }
+  }
+  
+  loadFileInfo();
+});
+</script>
 {% endblock %}

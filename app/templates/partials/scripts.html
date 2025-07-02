@@ -1,3 +1,9 @@
+<!-- Bootstrap JS -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+
+<!-- Utilitários do Sistema -->
+<script src="{{ url_for('static', filename='js/utils.js') }}?v=1.1"></script>
+
 <script>
   function inicializarDropdowns() {
     document.querySelectorAll('.dropdown').forEach(dropdown => {
@@ -54,14 +60,18 @@
           if (typeof inicializarPainel === 'function') inicializarPainel();
           if (typeof atualizarFila === 'function') atualizarFila();
           if (typeof inicializarDropdowns === 'function') inicializarDropdowns();
+          if (typeof inicializarPrioridadeSenhas === 'function') inicializarPrioridadeSenhas();  // ✅ ADICIONADO
         }, 150);
       } else {
         window.location.href = href;
       }
     } catch (err) {
       console.error("Erro AJAX:", err);
-      flashToast("Servidor inacessível. Aguardando reconexão...", "warning");
-      // mantém na mesma página sem recarregar
+      if (window.SistemaUtils && window.SistemaUtils.toastManager) {
+        SistemaUtils.toastManager.warning("Servidor inacessível. Aguardando reconexão...");
+      } else {
+        flashToast("Servidor inacessível. Aguardando reconexão...", "warning");
+      }
     }
   }
 
@@ -86,8 +96,10 @@
 </script>
 
 <script>
-  // ⏳ Logout automático após 15 minutos de inatividade
-  let tempoInatividade = 1000 * 60 * 15;
+  // ⏳ Logout automático após 15 minutos de inatividade (exceto em páginas públicas)
+  var ignorarLogout = ['/retira', '/display'];
+if (!ignorarLogout.includes(location.pathname)) {
+  let tempoInatividade = 1000 * 60 * 60 * 8;  // ⏳ 8 horas
   let timeoutLogout;
   function reiniciarTimerInatividade() {
     clearTimeout(timeoutLogout);
@@ -102,9 +114,16 @@
     document.addEventListener(evento, reiniciarTimerInatividade);
   });
   reiniciarTimerInatividade();
+}
 
-  // functor de toasts
+
+  // Função de toasts para compatibilidade (fallback)
   function flashToast(msg, type = 'info') {
+    if (window.SistemaUtils && window.SistemaUtils.toastManager) {
+      return SistemaUtils.toastManager.show(msg, type);
+    }
+    
+    // Fallback para versões antigas
     const container = document.getElementById('notification-container');
     if (!container) return console.warn('Container de toasts não encontrado');
     const toast = document.createElement('div');

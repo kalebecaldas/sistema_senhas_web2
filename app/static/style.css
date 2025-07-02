@@ -77,42 +77,5 @@
   }
   
 
-/* Quando o dropdown estiver aberto, altera a cor do botão para fundo branco e texto preto */
-.dropdown.show > .btn-outline-light,
-.dropdown:hover > .btn-outline-light {
-  background-color: white !important;
-  color: black !important;
-  border-color: #ccc !important;
-}
-
-/* Garante que o dropdown não feche antes de clicar */
-.navbar .dropdown-menu {
-  margin-top: 0;
-  border-radius: 0;
-  border: 1px solid rgba(0,0,0,0.15);
-}
-
-
-/* 🔄 NAVBAR - Estilização de Dropdowns com transições suaves */
-.navbar .btn.btn-outline-light {
-  transition: background-color 0.2s ease, color 0.2s ease, border-color 0.2s ease;
-  background-color: transparent;
-  color: white;
-  border-color: white;
-}
-
-.navbar .btn.btn-outline-light:hover,
-.navbar .btn.btn-outline-light:focus,
-.navbar .dropdown.show > .btn.btn-outline-light {
-  background-color: rgba(255, 255, 255, 0.15);
-  color: white;
-  border-color: white;
-}
-
-/* Menu suspenso com leve sombreado e sem bordas abruptas */
-.navbar .dropdown-menu {
-  margin-top: 0;
-  border-radius: 0;
-  border: 1px solid rgba(0, 0, 0, 0.15);
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-}
+/* NAVBAR - Regras removidas para evitar conflito com o navbar moderno */
+/* As regras do navbar agora estão definidas inline no arquivo navbar.html */

@@ -2,41 +2,466 @@
 {% block title %}Usuários Cadastrados{% endblock %}
 
 {% block content %}
-<div class="d-flex justify-content-between align-items-center mb-4">
-  <h2 class="mb-0">Usuários Cadastrados</h2>
-  <a href="{{ url_for('main.cadastro') }}" class="btn btn-success btn-sm">+ Novo Usuário</a>
+<div class="container-fluid">
+  <!-- Header -->
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+      <h2 class="mb-1 fw-bold text-primary">
+        <i class="fas fa-users me-2"></i>Usuários Cadastrados
+      </h2>
+      <p class="text-muted mb-0">Gerencie os usuários do sistema</p>
+    </div>
+    <a href="{{ url_for('main.cadastro') }}" class="btn btn-success d-flex align-items-center gap-2">
+      <i class="fas fa-user-plus"></i>
+      <span>Novo Usuário</span>
+    </a>
+  </div>
+
+  <!-- Search and Filters -->
+  <div class="card shadow-sm border-0 mb-4">
+    <div class="card-body">
+      <div class="row g-3">
+        <div class="col-md-6">
+          <label for="search-input" class="form-label fw-medium">
+            <i class="fas fa-search me-1"></i>Buscar Usuário
+          </label>
+                      <input 
+              type="text" 
+              id="search-input" 
+              class="form-control" 
+              placeholder="Digite nome, email ou tipo..."
+            >
+        </div>
+        <div class="col-md-3">
+          <label for="filter-tipo" class="form-label fw-medium">
+            <i class="fas fa-filter me-1"></i>Filtrar por Tipo
+          </label>
+          <select id="filter-tipo" class="form-select">
+            <option value="">Todos os tipos</option>
+            <option value="admin">Administrador</option>
+            <option value="usuario">Usuário</option>
+          </select>
+        </div>
+        <div class="col-md-2 d-flex align-items-end">
+          <button id="clear-filters" class="btn btn-outline-secondary w-100">
+            <i class="fas fa-times me-1"></i>Limpar Filtros
+          </button>
+        </div>
+        <div class="col-md-1 d-flex align-items-end">
+          <button id="refresh-users" class="btn btn-outline-primary w-100" title="Atualizar lista">
+            <i class="fas fa-sync-alt"></i>
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Users Table -->
+  <div class="card shadow-sm border-0">
+    <div class="card-header bg-light border-0">
+      <div class="d-flex justify-content-between align-items-center">
+        <h5 class="card-title mb-0">
+          <i class="fas fa-list me-2 text-primary"></i>Lista de Usuários
+        </h5>
+        <div class="d-flex align-items-center gap-2">
+          <span class="badge bg-primary" id="total-users">{{ usuarios|length }} usuários</span>
+          <span class="badge bg-danger" id="admin-count">{{ usuarios|selectattr('tipo', 'equalto', 'admin')|list|length }} administradores</span>
+        </div>
+      </div>
+    </div>
+    
+    <div class="card-body p-0">
+      <div class="table-responsive">
+        <table class="table table-hover mb-0" id="users-table">
+          <thead class="table-dark">
+            <tr>
+              <th class="border-0">
+                <i class="fas fa-hashtag me-1"></i>ID
+              </th>
+              <th class="border-0">
+                <i class="fas fa-user me-1"></i>Nome
+              </th>
+              <th class="border-0">
+                <i class="fas fa-envelope me-1"></i>Email
+              </th>
+              <th class="border-0">
+                <i class="fas fa-user-tag me-1"></i>Tipo
+              </th>
+              <th class="border-0 text-center">
+                <i class="fas fa-cogs me-1"></i>Ações
+              </th>
+            </tr>
+          </thead>
+          <tbody>
+  {% for u in usuarios %}
+  <tr class="user-row" data-tipo="{{ u.tipo.value if u.tipo.value else u.tipo }}">
+    <td class="fw-medium">{{ u.id }}</td>
+    <td>
+      <div class="d-flex align-items-center">
+        <div class="avatar-sm me-2">
+          <i class="fas fa-user-circle fa-lg text-primary"></i>
+        </div>
+        <span class="fw-medium">{{ u.nome }}</span>
+      </div>
+    </td>
+    <td>
+      <a href="mailto:{{ u.email }}" class="text-decoration-none">
+        <i class="fas fa-envelope me-1 text-muted"></i>{{ u.email }}
+      </a>
+    </td>
+    <td>
+      {% if u.tipo.value == 'admin' or u.tipo == 'admin' %}
+        <span class="badge bg-danger d-flex align-items-center gap-1" style="width: fit-content;">
+          <i class="fas fa-shield-alt"></i>Administrador
+        </span>
+      {% else %}
+        <span class="badge bg-secondary d-flex align-items-center gap-1" style="width: fit-content;">
+          <i class="fas fa-user"></i>Usuário
+        </span>
+      {% endif %}
+    </td>
+    <td class="text-center">
+      <div class="btn-group" role="group">
+        <a href="/usuarios/{{ u.id }}/editar" class="btn btn-sm btn-outline-primary d-flex align-items-center gap-1" title="Editar usuário">
+          <i class="fas fa-edit"></i>
+          <span class="d-none d-sm-inline">Editar</span>
+        </a>
+        {% if u.id != current_user.id %}
+          <button type="button" class="btn btn-sm btn-outline-danger d-flex align-items-center gap-1" onclick="confirmarExclusao({{ u.id }}, '{{ u.nome|replace("'", "\\'") }}')" title="Excluir usuário">
+            <i class="fas fa-trash"></i>
+            <span class="d-none d-sm-inline">Excluir</span>
+          </button>
+        {% endif %}
+      </div>
+    </td>
+  </tr>
+  {% endfor %}
+</tbody>
+        </table>
+      </div>
+      
+      <!-- Empty state -->
+      <div id="empty-users" class="text-center py-5 d-none">
+        <i class="fas fa-users fa-3x text-muted mb-3"></i>
+        <h5 class="text-muted">Nenhum usuário encontrado</h5>
+        <p class="text-muted">Tente ajustar os filtros de busca</p>
+      </div>
+    </div>
+  </div>
 </div>
 
-<div class="table-responsive">
-  <table class="table table-bordered table-hover">
-    <thead class="table-dark">
-      <tr>
-        <th>ID</th>
-        <th>Nome</th>
-        <th>Email</th>
-        <th>Tipo</th>
-        <th>Ações</th>
-      </tr>
-    </thead>
-    <tbody>
-      {% for u in usuarios %}
-      <tr>
-        <td>{{ u.id }}</td>
-        <td>{{ u.nome }}</td>
-        <td>{{ u.email }}</td>
-        <td>
-          {% if u.tipo.value == 'admin' %}
-            <span class="badge bg-danger">Administrador</span>
-          {% else %}
-            <span class="badge bg-secondary">Usuário</span>
-          {% endif %}
-        </td>
-        <td>
-          <a href="{{ url_for('main.editar_usuario', id=u.id) }}" class="btn btn-sm btn-primary">Editar</a>
-        </td>
-      </tr>
-      {% endfor %}
-    </tbody>
-  </table>
+<!-- Delete Confirmation Modal -->
+<div class="modal fade" id="deleteModal" tabindex="-1">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header border-0">
+        <h5 class="modal-title text-danger">
+          <i class="fas fa-exclamation-triangle me-2"></i>Confirmar Exclusão
+        </h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        <p>Tem certeza que deseja excluir o usuário <strong id="user-name-delete"></strong>?</p>
+        <p class="text-muted small">Esta ação não pode ser desfeita.</p>
+      </div>
+      <div class="modal-footer border-0">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+        <button type="button" class="btn btn-danger" id="confirm-delete">
+          <i class="fas fa-trash me-1"></i>Excluir
+        </button>
+      </div>
+    </div>
+  </div>
 </div>
+
+<style>
+/* Card Improvements */
+.card {
+  border-radius: 12px;
+  transition: all 0.2s ease;
+}
+
+.card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(0,0,0,0.1) !important;
+}
+
+/* Form Controls */
+.form-control, .form-select {
+  border-radius: 8px;
+  border: 2px solid #e9ecef;
+  transition: all 0.2s ease;
+}
+
+.form-control:focus, .form-select:focus {
+  border-color: #0d6efd;
+  box-shadow: 0 0 0 0.2rem rgba(13, 110, 253, 0.25);
+}
+
+/* Buttons */
+.btn {
+  border-radius: 8px;
+  font-weight: 500;
+  transition: all 0.2s ease;
+}
+
+.btn:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+}
+
+.btn-group .btn {
+  border-radius: 6px;
+}
+
+/* Table Improvements */
+.table th {
+  font-weight: 600;
+  text-transform: uppercase;
+  font-size: 0.85rem;
+  letter-spacing: 0.5px;
+}
+
+.table tbody tr {
+  transition: all 0.2s ease;
+}
+
+.table tbody tr:hover {
+  background-color: rgba(13, 110, 253, 0.05);
+  transform: scale(1.01);
+}
+
+/* Badge Improvements */
+.badge {
+  font-size: 0.75rem;
+  padding: 0.5em 0.75em;
+  border-radius: 6px;
+}
+
+/* Avatar */
+.avatar-sm {
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Modal Improvements */
+.modal-content {
+  border-radius: 12px;
+  border: none;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+}
+
+
+
+/* Responsive */
+@media (max-width: 768px) {
+  .btn-group {
+    flex-direction: column;
+    gap: 0.25rem;
+  }
+  
+  .btn-group .btn {
+    border-radius: 6px;
+  }
+}
+</style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+  const searchInput = document.getElementById('search-input');
+  const filterTipo = document.getElementById('filter-tipo');
+  const clearFilters = document.getElementById('clear-filters');
+  const refreshUsers = document.getElementById('refresh-users');
+  const usersTable = document.getElementById('users-table');
+  const usersTbody = usersTable.querySelector('tbody');
+  const emptyUsers = document.getElementById('empty-users');
+  const totalUsers = document.getElementById('total-users');
+  const adminCount = document.getElementById('admin-count');
+
+
+  let searchTimeout = null;
+  let currentRequest = null;
+
+  async function fetchUsers() {
+    const q = searchInput.value.trim();
+    const tipo = filterTipo.value;
+    const params = new URLSearchParams({ q, tipo });
+    
+    console.log('Buscando usuários com parâmetros:', { q, tipo });
+    
+    // Cancelar requisição anterior se existir
+    if (currentRequest) {
+      currentRequest.abort();
+    }
+    
+    try {
+      const controller = new AbortController();
+      currentRequest = controller;
+      
+      const url = `/api/buscar_usuarios?${params.toString()}`;
+      console.log('Fazendo requisição para:', url);
+      
+      const resp = await fetch(url, {
+        signal: controller.signal
+      });
+      
+      console.log('Resposta recebida:', resp.status, resp.ok);
+      
+      // Verificar se foi redirecionado para login
+      if (resp.redirected && resp.url.includes('/login')) {
+        console.log('Redirecionado para login - sessão expirada');
+        window.location.href = '/login';
+        return [];
+      }
+      
+      if (!resp.ok) {
+        console.error('Erro na resposta:', resp.status, resp.statusText);
+        return [];
+      }
+      
+      const contentType = resp.headers.get('content-type');
+      if (contentType && contentType.includes('text/html')) {
+        console.log('Recebido HTML em vez de JSON - provavelmente redirecionamento');
+        window.location.href = '/login';
+        return [];
+      }
+      
+      const data = await resp.json();
+      console.log('Dados recebidos:', data);
+      return data;
+    } catch (error) {
+      if (error.name === 'AbortError') {
+        console.log('Requisição cancelada');
+        return []; // Requisição foi cancelada
+      }
+      console.error('Erro na busca:', error);
+      return [];
+    } finally {
+      currentRequest = null;
+    }
+  }
+
+  function renderUsers(users) {
+    console.log('Renderizando usuários:', users);
+    usersTbody.innerHTML = '';
+    let admins = 0;
+    
+    if (!Array.isArray(users)) {
+      console.error('Dados recebidos não são um array:', users);
+      return;
+    }
+    
+    users.forEach(u => {
+      if (u.tipo === 'admin') admins++;
+      const safeNome = u.nome.replace(/'/g, "\\'");
+      usersTbody.innerHTML += `
+        <tr class="user-row" data-tipo="${u.tipo}">
+          <td class="fw-medium">${u.id}</td>
+          <td>
+            <div class="d-flex align-items-center">
+              <div class="avatar-sm me-2">
+                <i class="fas fa-user-circle fa-lg text-primary"></i>
+              </div>
+              <span class="fw-medium">${u.nome}</span>
+            </div>
+          </td>
+          <td>
+            <a href="mailto:${u.email}" class="text-decoration-none">
+              <i class="fas fa-envelope me-1 text-muted"></i>${u.email}
+            </a>
+          </td>
+          <td>
+            ${u.tipo === 'admin' ? `<span class="badge bg-danger d-flex align-items-center gap-1" style="width: fit-content;"><i class="fas fa-shield-alt"></i>Administrador</span>` : `<span class="badge bg-secondary d-flex align-items-center gap-1" style="width: fit-content;"><i class="fas fa-user"></i>Usuário</span>`}
+          </td>
+          <td class="text-center">
+            <div class="btn-group" role="group">
+              <a href="/usuarios/${u.id}/editar" class="btn btn-sm btn-outline-primary d-flex align-items-center gap-1" title="Editar usuário">
+                <i class="fas fa-edit"></i>
+                <span class="d-none d-sm-inline">Editar</span>
+              </a>
+              ${u.id != window.currentUserId ? `<button type="button" class="btn btn-sm btn-outline-danger d-flex align-items-center gap-1" onclick="confirmarExclusao(${u.id}, '${safeNome}')" title="Excluir usuário"><i class="fas fa-trash"></i><span class="d-none d-sm-inline">Excluir</span></button>` : ''}
+            </div>
+          </td>
+        </tr>
+      `;
+    });
+    
+    console.log(`Renderizados ${users.length} usuários, ${admins} administradores`);
+    totalUsers.textContent = `${users.length} usuários`;
+    adminCount.textContent = `${admins} administradores`;
+    
+    if (users.length === 0) {
+      usersTable.style.display = 'none';
+      emptyUsers.classList.remove('d-none');
+      console.log('Mostrando estado vazio');
+    } else {
+      usersTable.style.display = '';
+      emptyUsers.classList.add('d-none');
+      console.log('Mostrando tabela com dados');
+    }
+  }
+
+  async function updateUsers() {
+    const users = await fetchUsers();
+    renderUsers(users);
+  }
+
+  // Debounce para evitar muitas requisições
+  function debouncedSearch() {
+    clearTimeout(searchTimeout);
+    searchTimeout = setTimeout(updateUsers, 300);
+  }
+
+  searchInput.addEventListener('input', debouncedSearch);
+  filterTipo.addEventListener('change', updateUsers);
+  clearFilters.addEventListener('click', function() {
+    searchInput.value = '';
+    filterTipo.value = '';
+    clearTimeout(searchTimeout);
+    updateUsers();
+  });
+  
+  refreshUsers.addEventListener('click', function() {
+    updateUsers();
+  });
+
+  // Expor o id do usuário logado para o JS (para não mostrar botão excluir para si mesmo)
+  window.currentUserId = {{ current_user.id }};
+
+  // Função para recarregar quando a página se tornar visível
+  function handleVisibilityChange() {
+    if (!document.hidden) {
+      // Página se tornou visível, recarregar lista
+      updateUsers();
+    }
+  }
+
+  // Listener para detectar quando a página se torna visível
+  document.addEventListener('visibilitychange', handleVisibilityChange);
+
+  // Listener para detectar quando a página ganha foco (navegação por tab)
+  window.addEventListener('focus', updateUsers);
+
+  // Inicializar apenas para busca e filtros
+  console.log('Inicializando busca de usuários...');
+  
+  // Não carregar dados iniciais via AJAX, pois já estão renderizados pelo servidor
+  // updateUsers(); // Comentado para usar dados do servidor
+});
+
+function confirmarExclusao(userId, userName) {
+  document.getElementById('user-name-delete').textContent = userName;
+  const modal = new bootstrap.Modal(document.getElementById('deleteModal'));
+  modal.show();
+
+  document.getElementById('confirm-delete').onclick = function() {
+    // Aqui você pode implementar a lógica de exclusão
+    console.log('Excluir usuário:', userId);
+    modal.hide();
+  };
+}
+</script>
 {% endblock %}

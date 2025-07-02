@@ -1,69 +1,653 @@
-<nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+<nav class="navbar navbar-expand-lg navbar-modern">
   <div class="container-fluid">
-    {% if current_user.tipo.value == 'admin' %}
-    <form action="{{ url_for('main.painel') }}" method="GET" class="d-flex align-items-center navbar-brand mb-0 me-auto">
-      <button type="submit" class="btn btn-link text-white text-decoration-none d-flex align-items-center" style="font-size: 1.25rem;">
-        <img src="{{ url_for('static', filename=config.logo_path) }}" alt="Logo" height="30" class="me-2">
-        Sistema de Senhas
-      </button>
-    </form>
-    {% else %}
-    <a class="navbar-brand d-flex align-items-center" href="{{ url_for('main.painel') }}" data-ajax>
-      <img src="{{ url_for('static', filename=config.logo_path) }}" alt="Logo" height="30" class="me-2">
-      Sistema de Senhas
-    </a>
-    {% endif %}
+    <!-- Logo/Brand -->
+    <div class="navbar-brand-container">
+      {% if current_user.tipo.value == 'admin' %}
+      <form action="{{ url_for('main.painel') }}" method="GET" class="brand-form">
+        <button type="submit" class="brand-button">
+          <div class="brand-content">
+            <img src="{{ url_for('static', filename=config.logo_path) }}" alt="Logo" class="brand-logo">
+            <span class="brand-text">Sistema de Senhas</span>
+          </div>
+        </button>
+      </form>
+      {% else %}
+      <a class="brand-button" href="{{ url_for('main.painel') }}" data-ajax>
+        <div class="brand-content">
+          <img src="{{ url_for('static', filename=config.logo_path) }}" alt="Logo" class="brand-logo">
+          <span class="brand-text">Sistema de Senhas</span>
+        </div>
+      </a>
+      {% endif %}
+    </div>
 
+    <!-- Toggle Button -->
+    <button class="navbar-toggler modern-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+      <div class="hamburger">
+        <span></span>
+        <span></span>
+        <span></span>
+      </div>
+    </button>
+
+    <!-- Navigation Items -->
     <div class="collapse navbar-collapse justify-content-end" id="navbarNav">
       <ul class="navbar-nav align-items-center">
-        <li class="nav-item text-white me-3">
-          👤 {{ current_user.nome }} ({{ 'Administrador' if current_user.tipo.value == 'admin' else 'Usuário' }})
+        <!-- User Info -->
+        <li class="nav-item">
+          <div class="user-profile">
+            <div class="user-avatar">
+              <i class="fas fa-user"></i>
+            </div>
+            <div class="user-info">
+              <span class="user-name">{{ current_user.nome }}</span>
+              <span class="user-role">{{ 'Admin' if current_user.tipo.value == 'admin' else 'Usuário' }}</span>
+            </div>
+          </div>
         </li>
 
         {% if current_user.tipo.value == 'admin' %}
-        <!-- Usuários -->
-        <li class="nav-item dropdown me-2">
-          <a class="nav-link dropdown-toggle btn btn-sm btn-outline-light" href="#" id="dropdownUsuarios" role="button"
-             data-bs-toggle="dropdown" aria-expanded="false">
-            Usuários
+        <!-- Usuários Dropdown -->
+        <li class="nav-item dropdown">
+          <a class="nav-link dropdown-toggle" 
+             href="#" id="dropdownUsuarios" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+            <i class="fas fa-users"></i>
+            <span>Usuários</span>
           </a>
           <ul class="dropdown-menu" aria-labelledby="dropdownUsuarios">
-            <li><a class="dropdown-item" href="{{ url_for('main.listar_usuarios') }}" data-ajax>Listar</a></li>
-            <li><a class="dropdown-item" href="{{ url_for('main.cadastro') }}" data-ajax>Novo Cadastro</a></li>
+            <li><a class="dropdown-item" href="{{ url_for('main.listar_usuarios') }}" data-ajax>
+              <i class="fas fa-list"></i>
+              <span>Listar Usuários</span>
+            </a></li>
+            <li><a class="dropdown-item" href="{{ url_for('main.cadastro') }}" data-ajax>
+              <i class="fas fa-user-plus"></i>
+              <span>Novo Cadastro</span>
+            </a></li>
           </ul>
         </li>
 
         <!-- Relatórios -->
-        <li class="nav-item dropdown me-2">
-          <a class="nav-link dropdown-toggle btn btn-sm btn-outline-light" href="#" id="dropdownRelatorios" role="button"
-             data-bs-toggle="dropdown" aria-expanded="false">
-            Relatórios
+        <li class="nav-item">
+          <a class="nav-link" href="{{ url_for('main.relatorios') }}">
+            <i class="fas fa-chart-line"></i>
+            <span>Relatórios</span>
           </a>
-          <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="dropdownRelatorios">
-            <li><a class="dropdown-item" href="#" data-ajax>Senhas Geradas</a></li>
-            <li><a class="dropdown-item" href="#" data-ajax>Chamadas por Usuário</a></li>
-            <li><a class="dropdown-item" href="#" data-ajax>Primeira vez x Recorrentes</a></li>
-            <li><a class="dropdown-item" href="#" data-ajax>Normais x Preferenciais</a></li>
-          </ul>
         </li>
 
-        <!-- Edição -->
-        <li class="nav-item dropdown me-2">
-          <a class="nav-link dropdown-toggle btn btn-sm btn-outline-light" href="#" id="dropdownEditar" role="button"
-             data-bs-toggle="dropdown" aria-expanded="false">
-            Editar
+        <!-- Configurações Dropdown -->
+        <li class="nav-item dropdown">
+          <a class="nav-link dropdown-toggle" 
+             href="#" id="dropdownEditar" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+            <i class="fas fa-cog"></i>
+            <span>Configurações</span>
           </a>
-          <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="dropdownEditar">
-            <li><a class="dropdown-item" href="{{ url_for('main.edtelas') }}" data-ajax>Display</a></li>
-            <li><a class="dropdown-item" href="{{ url_for('main.prioridade_senhas') }}" data-ajax>Prioridade Senhas</a></li>
+          <ul class="dropdown-menu" aria-labelledby="dropdownEditar">
+            <li><a class="dropdown-item" href="{{ url_for('main.edtelas') }}" data-ajax>
+              <i class="fas fa-tv"></i>
+              <span>Display</span>
+            </a></li>
+            <li><a class="dropdown-item" href="{{ url_for('main.prioridade_senhas') }}" data-ajax>
+              <i class="fas fa-sort-amount-up"></i>
+              <span>Prioridade Senhas</span>
+            </a></li>
+            <li><hr class="dropdown-divider"></li>
+            <li><a class="dropdown-item" href="{{ url_for('main.atualizacoes') }}" data-ajax>
+              <i class="fas fa-download"></i>
+              <span>Atualizações</span>
+            </a></li>
           </ul>
         </li>
         {% endif %}
 
+        <!-- Logout -->
         <li class="nav-item">
-          <a class="btn btn-sm btn-light" href="{{ url_for('main.logout') }}">Sair</a>
+          <a class="nav-link logout-button" href="{{ url_for('main.logout') }}">
+            <i class="fas fa-sign-out-alt"></i>
+            <span>Sair</span>
+          </a>
         </li>
       </ul>
     </div>
   </div>
 </nav>
+
+<style>
+/* Navbar Minimalista */
+.navbar-modern {
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(10px);
+  border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+  padding: 0.5rem 0;
+  position: sticky;
+  top: 0;
+  z-index: 1030;
+}
+
+/* Brand/Logo - Minimalista */
+.navbar-brand-container {
+  display: flex;
+  align-items: center;
+}
+
+.brand-form {
+  margin: 0;
+  padding: 0;
+}
+
+.brand-button {
+  background: none;
+  border: none;
+  padding: 0;
+  text-decoration: none;
+  color: inherit;
+  transition: all 0.2s ease;
+}
+
+.brand-button:hover {
+  transform: translateY(-1px);
+  color: inherit;
+  text-decoration: none;
+}
+
+.brand-content {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.brand-logo {
+  width: 32px;
+  height: 32px;
+  object-fit: contain;
+  border-radius: 6px;
+  transition: all 0.2s ease;
+}
+
+.brand-button:hover .brand-logo {
+  transform: scale(1.05);
+}
+
+.brand-text {
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: #1f2937;
+  letter-spacing: -0.3px;
+}
+
+/* Toggle Button */
+.modern-toggler {
+  border: none;
+  padding: 0.5rem;
+  background: rgba(0, 0, 0, 0.05);
+  border-radius: 6px;
+}
+
+.hamburger {
+  width: 20px;
+  height: 16px;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+
+.hamburger span {
+  display: block;
+  width: 100%;
+  height: 2px;
+  background: #374151;
+  border-radius: 1px;
+  transition: all 0.2s ease;
+}
+
+.hamburger span:nth-child(1) {
+  transform-origin: top left;
+}
+
+.hamburger span:nth-child(3) {
+  transform-origin: bottom left;
+}
+
+.navbar-toggler[aria-expanded="true"] .hamburger span:nth-child(1) {
+  transform: rotate(45deg);
+}
+
+.navbar-toggler[aria-expanded="true"] .hamburger span:nth-child(2) {
+  opacity: 0;
+}
+
+.navbar-toggler[aria-expanded="true"] .hamburger span:nth-child(3) {
+  transform: rotate(-45deg);
+}
+
+/* User Profile - Minimalista */
+.user-profile {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 0.75rem;
+  background: rgba(0, 0, 0, 0.03);
+  border-radius: 8px;
+  transition: all 0.2s ease;
+}
+
+.user-profile:hover {
+  background: rgba(0, 0, 0, 0.06);
+}
+
+.user-avatar {
+  width: 28px;
+  height: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #667eea;
+  border-radius: 50%;
+  color: white;
+  font-size: 0.875rem;
+}
+
+.user-info {
+  display: flex;
+  flex-direction: column;
+  gap: 0.125rem;
+}
+
+.user-name {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: #1f2937;
+}
+
+.user-role {
+  font-size: 0.7rem;
+  color: #6b7280;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+}
+
+/* Navigation Links - Minimalista e Centralizado */
+.navbar-nav {
+  gap: 0.5rem;
+  align-items: center;
+}
+
+.nav-link {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 0.625rem 1rem;
+  color: #374151;
+  text-decoration: none;
+  border-radius: 8px;
+  transition: all 0.2s ease;
+  font-size: 0.875rem;
+  font-weight: 500;
+  min-height: 40px;
+  text-align: center;
+  background: transparent;
+}
+
+.nav-link:hover {
+  background: #e0e7ff !important;
+  color: #1f2937 !important;
+  text-decoration: none;
+  transform: translateY(-1px);
+}
+
+.nav-link:active {
+  transform: translateY(0);
+  background: #d1d5db !important;
+}
+
+.nav-link i {
+  font-size: 0.875rem;
+  width: 16px;
+  text-align: center;
+}
+
+/* Dropdown Menu - Com Animações Suaves */
+.dropdown-menu {
+  background: white;
+  border: 1px solid rgba(0, 0, 0, 0.1);
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  padding: 0.5rem;
+  min-width: 200px;
+  margin-top: 0.25rem;
+  opacity: 0;
+  visibility: hidden;
+  transform: translateY(-10px);
+  transition: all 0.2s ease;
+  position: absolute;
+  z-index: 1050;
+}
+
+.dropdown-menu.show {
+  opacity: 1;
+  visibility: visible;
+  transform: translateY(0);
+}
+
+.dropdown-item {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 0.75rem;
+  border-radius: 4px;
+  color: #374151;
+  text-decoration: none;
+  transition: all 0.15s ease;
+  font-size: 0.875rem;
+  background: transparent;
+}
+
+.dropdown-item:hover {
+  background: #e0e7ff !important;
+  color: #1f2937 !important;
+  text-decoration: none;
+  transform: translateX(2px);
+}
+
+.dropdown-item i {
+  font-size: 0.875rem;
+  width: 16px;
+  text-align: center;
+  color: #667eea;
+}
+
+/* Logout Button - Centralizado */
+.logout-button {
+  background: #ef4444;
+  color: #fff;
+  outline: none;
+  box-shadow: none;
+  border: none;
+  border-radius: 8px;
+  padding: 0.625rem 1.25rem;
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  min-height: 40px;
+  text-align: center;
+  transition: background 0.2s, color 0.2s, transform 0.2s;
+}
+
+.logout-button i {
+  color: #fff;
+  font-size: 1.1rem;
+  margin-right: 0.5rem;
+  margin-left: -0.2rem;
+}
+
+.logout-button:hover,
+.logout-button:focus {
+  background: #dc2626;
+  color: #fff;
+  outline: none;
+  box-shadow: none;
+  transform: translateY(-1px) scale(1.04);
+}
+
+.logout-button:active {
+  background: #b91c1c;
+  color: #fff;
+  outline: none;
+  box-shadow: none;
+  transform: translateY(0) scale(1);
+}
+
+/* Responsive */
+@media (max-width: 991.98px) {
+  .navbar-nav {
+    gap: 0.25rem;
+    padding: 1rem 0;
+  }
+  
+  .nav-link {
+    padding: 0.75rem;
+    border-radius: 6px;
+    justify-content: flex-start;
+  }
+  
+  .user-profile {
+    margin: 0.5rem 0;
+  }
+  
+  .dropdown-menu {
+    border: none;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    margin-top: 0.25rem;
+  }
+  
+  .brand-text {
+    font-size: 1rem;
+  }
+  
+  .logout-button {
+    justify-content: flex-start;
+  }
+}
+
+/* Dark mode removido conforme solicitado */
+
+/* NAVBAR BUTTONS - ESTADO NORMAL */
+.navbar-nav .nav-link:not(.logout-button) {
+  background: transparent !important;
+  color: #374151 !important;
+  outline: none !important;
+  box-shadow: none !important;
+  transition: background 0.2s, color 0.2s, transform 0.2s !important;
+  cursor: default !important;
+}
+
+/* HOVER/FOKUS - FUNDO ESCURO E LETRA BRANCA */
+.navbar-nav .nav-link:not(.logout-button):hover,
+.navbar-nav .nav-link:not(.logout-button):focus {
+  background: #374151 !important;
+  color: #fff !important;
+  outline: none !important;
+  box-shadow: none !important;
+  transform: translateY(-1px) scale(1.04) !important;
+  cursor: default !important;
+}
+
+.navbar-nav .nav-link:not(.logout-button):active,
+.navbar-nav .nav-link:not(.logout-button).show,
+.navbar-nav .nav-link:not(.logout-button):focus-visible {
+  outline: none !important;
+  box-shadow: none !important;
+  background: transparent !important;
+  color: #1f2937 !important;
+}
+
+.navbar-nav .nav-link:not(.logout-button):not(:hover):not(:focus):not(:active):not(.show) {
+  background: transparent !important;
+  color: #374151 !important;
+}
+
+/* DROPDOWN ITEM */
+.dropdown-menu .dropdown-item {
+  background: transparent !important;
+  color: #374151 !important;
+  outline: none !important;
+  box-shadow: none !important;
+  transition: background 0.15s, color 0.15s, transform 0.15s !important;
+}
+
+.dropdown-menu .dropdown-item:hover,
+.dropdown-menu .dropdown-item:focus {
+  background: #e0e7ff !important;
+  color: #1f2937 !important;
+  outline: none !important;
+  box-shadow: none !important;
+  transform: translateX(2px) scale(1.03) !important;
+}
+
+.dropdown-menu .dropdown-item:active,
+.dropdown-menu .dropdown-item.show,
+.dropdown-menu .dropdown-item:focus-visible {
+  outline: none !important;
+  box-shadow: none !important;
+  background: transparent !important;
+  color: #1f2937 !important;
+}
+
+.dropdown-menu .dropdown-item:not(:hover):not(:focus):not(:active):not(.show) {
+  background: transparent !important;
+  color: #374151 !important;
+}
+
+/* LOGOUT BUTTON SEMPRE VERMELHO, CENTRALIZADO, COM ÍCONE DE SETA */
+.logout-button,
+.navbar-nav .nav-link.logout-button {
+  background: #ef4444 !important;
+  color: #fff !important;
+  outline: none !important;
+  box-shadow: none !important;
+  border: none !important;
+  border-radius: 8px !important;
+  padding: 0.625rem 1.25rem !important;
+  font-weight: 500 !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 0.5rem !important;
+  min-height: 40px !important;
+  text-align: center !important;
+  transition: background 0.2s, color 0.2s, transform 0.2s !important;
+}
+
+.logout-button i,
+.navbar-nav .nav-link.logout-button i {
+  color: #fff !important;
+  font-size: 1.1rem !important;
+  margin-right: 0.5rem !important;
+  margin-left: -0.2rem !important;
+}
+
+.logout-button:hover,
+.logout-button:focus,
+.navbar-nav .nav-link.logout-button:hover,
+.navbar-nav .nav-link.logout-button:focus {
+  background: #dc2626 !important;
+  color: #fff !important;
+  outline: none !important;
+  box-shadow: none !important;
+  transform: translateY(-1px) scale(1.04) !important;
+}
+
+.logout-button:active,
+.navbar-nav .nav-link.logout-button:active {
+  background: #b91c1c !important;
+  color: #fff !important;
+  outline: none !important;
+  box-shadow: none !important;
+  transform: translateY(0) scale(1) !important;
+}
+
+/* Dark mode removido conforme solicitado */
+</style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+  // Melhor controle dos dropdowns
+  const dropdowns = document.querySelectorAll('.dropdown');
+  
+  dropdowns.forEach(dropdown => {
+    const dropdownMenu = dropdown.querySelector('.dropdown-menu');
+    const dropdownToggle = dropdown.querySelector('.dropdown-toggle');
+    
+    let timeoutId;
+    let isMouseInDropdown = false;
+    
+    // Mouse entra no dropdown
+    dropdown.addEventListener('mouseenter', function() {
+      clearTimeout(timeoutId);
+      isMouseInDropdown = true;
+      // FECHA TODOS OS OUTROS DROPDOWNS
+      document.querySelectorAll('.dropdown-menu.show').forEach(menu => {
+        if (menu !== dropdownMenu) {
+          menu.classList.remove('show');
+          const toggle = document.querySelector(`[aria-labelledby="${menu.getAttribute('aria-labelledby')}"]`);
+          if (toggle) {
+            const bsDropdown = bootstrap.Dropdown.getInstance(toggle);
+            if (bsDropdown) {
+              bsDropdown.hide();
+            }
+          }
+        }
+      });
+      // Abrir dropdown
+      const bsDropdown = new bootstrap.Dropdown(dropdownToggle);
+      bsDropdown.show();
+      // Adicionar classe show para animação
+      setTimeout(() => {
+        dropdownMenu.classList.add('show');
+      }, 10);
+    });
+    // Mouse sai do dropdown
+    dropdown.addEventListener('mouseleave', function() {
+      isMouseInDropdown = false;
+      // Delay maior para permitir clicar nos itens
+      timeoutId = setTimeout(() => {
+        if (!isMouseInDropdown) {
+          dropdownMenu.classList.remove('show');
+          const bsDropdown = bootstrap.Dropdown.getInstance(dropdownToggle);
+          if (bsDropdown) {
+            bsDropdown.hide();
+          }
+        }
+      }, 300); // Delay aumentado para 300ms
+    });
+    // Mouse entra no menu do dropdown
+    dropdownMenu.addEventListener('mouseenter', function() {
+      clearTimeout(timeoutId);
+      isMouseInDropdown = true;
+    });
+    // Mouse sai do menu do dropdown
+    dropdownMenu.addEventListener('mouseleave', function() {
+      isMouseInDropdown = false;
+      timeoutId = setTimeout(() => {
+        if (!isMouseInDropdown) {
+          dropdownMenu.classList.remove('show');
+          const bsDropdown = bootstrap.Dropdown.getInstance(dropdownToggle);
+          if (bsDropdown) {
+            bsDropdown.hide();
+          }
+        }
+      }, 200);
+    });
+  });
+  // Fechar todos os dropdowns quando clicar fora
+  document.addEventListener('click', function(e) {
+    if (!e.target.closest('.dropdown')) {
+      const openDropdowns = document.querySelectorAll('.dropdown-menu.show');
+      openDropdowns.forEach(menu => {
+        menu.classList.remove('show');
+        const toggle = document.querySelector(`[data-bs-target="#${menu.id}"]`) || 
+                      document.querySelector(`[aria-labelledby="${menu.getAttribute('aria-labelledby')}"]`);
+        if (toggle) {
+          const bsDropdown = bootstrap.Dropdown.getInstance(toggle);
+          if (bsDropdown) {
+            bsDropdown.hide();
+          }
+        }
+      });
+    }
+  });
+  // Remover estado ativo dos links após clique
+  document.querySelectorAll('.nav-link').forEach(link => {
+    link.addEventListener('click', function() {
+      // Remover qualquer estado ativo após um breve delay
+      setTimeout(() => {
+        this.blur();
+      }, 100);
+    });
+  });
+});
+</script>

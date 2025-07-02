@@ -1,0 +1,421 @@
+{% extends "base.html" %}
+{% block title %}Relatórios e Dashboard{% endblock %}
+
+{% block head_extra %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<style>
+.stat-card {
+  transition: all 0.3s ease;
+  border: none;
+  border-radius: 12px;
+}
+
+.stat-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 10px 25px rgba(0,0,0,0.15);
+}
+
+.stat-icon {
+  width: 60px;
+  height: 60px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.5rem;
+}
+
+.chart-container {
+  position: relative;
+  height: 300px;
+  margin: 20px 0;
+}
+
+.chart-card {
+  border: none;
+  border-radius: 12px;
+  box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+}
+
+.chart-card .card-header {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  border-radius: 12px 12px 0 0;
+  border: none;
+}
+
+.chart-toggle {
+  background: rgba(255,255,255,0.2);
+  border: 1px solid rgba(255,255,255,0.3);
+  color: white;
+  border-radius: 6px;
+  padding: 4px 12px;
+  font-size: 0.8rem;
+  transition: all 0.2s;
+}
+
+.chart-toggle:hover {
+  background: rgba(255,255,255,0.3);
+  color: white;
+}
+
+.chart-toggle.active {
+  background: white;
+  color: #667eea;
+}
+
+.table-responsive {
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+.progress-custom {
+  height: 8px;
+  border-radius: 4px;
+  background: #e9ecef;
+}
+
+.progress-custom .progress-bar {
+  border-radius: 4px;
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid" style="padding-bottom: 2rem;">
+  <!-- Header -->
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+      <h2 class="fw-bold text-primary mb-1">
+        <i class="fas fa-chart-line me-2"></i>Dashboard e Relatórios
+      </h2>
+      <p class="text-muted mb-0">Análise completa do sistema de senhas</p>
+    </div>
+    <div class="d-flex gap-2">
+      <a href="{{ url_for('main.relatorio_personalizado') }}" class="btn btn-outline-primary d-flex align-items-center gap-2">
+        <i class="fas fa-file-alt"></i>
+        <span>Relatório Personalizado</span>
+      </a>
+      <button class="btn btn-success d-flex align-items-center gap-2" onclick="exportarDashboard()">
+        <i class="fas fa-download"></i>
+        <span>Exportar</span>
+      </button>
+      <button class="btn btn-warning d-flex align-items-center gap-2" onclick="limparDadosTeste()">
+        <i class="fas fa-broom"></i>
+        <span>Limpar Dados Antigos</span>
+      </button>
+    </div>
+  </div>
+
+  <!-- Cards de Estatísticas -->
+  <div class="row g-4 mb-4">
+    <!-- Total de Senhas -->
+    <div class="col-xl-3 col-md-6">
+      <div class="card stat-card shadow-sm">
+        <div class="card-body">
+          <div class="d-flex align-items-center">
+            <div class="stat-icon bg-primary bg-opacity-10 text-primary me-3">
+              <i class="fas fa-ticket-alt"></i>
+            </div>
+            <div>
+              <h3 class="fw-bold mb-1">{{ total_senhas }}</h3>
+              <p class="text-muted mb-0">Total de Senhas</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Senhas Chamadas -->
+    <div class="col-xl-3 col-md-6">
+      <div class="card stat-card shadow-sm">
+        <div class="card-body">
+          <div class="d-flex align-items-center">
+            <div class="stat-icon bg-success bg-opacity-10 text-success me-3">
+              <i class="fas fa-check-circle"></i>
+            </div>
+            <div>
+              <h3 class="fw-bold mb-1">{{ senhas_chamadas }}</h3>
+              <p class="text-muted mb-0">Senhas Chamadas</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Senhas Aguardando -->
+    <div class="col-xl-3 col-md-6">
+      <div class="card stat-card shadow-sm">
+        <div class="card-body">
+          <div class="d-flex align-items-center">
+            <div class="stat-icon bg-warning bg-opacity-10 text-warning me-3">
+              <i class="fas fa-clock"></i>
+            </div>
+            <div>
+              <h3 class="fw-bold mb-1">{{ senhas_aguardando }}</h3>
+              <p class="text-muted mb-0">Aguardando</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Tempo Médio -->
+    <div class="col-xl-3 col-md-6">
+      <div class="card stat-card shadow-sm">
+        <div class="card-body">
+          <div class="d-flex align-items-center">
+            <div class="stat-icon bg-info bg-opacity-10 text-info me-3">
+              <i class="fas fa-stopwatch"></i>
+            </div>
+            <div>
+              <h3 class="fw-bold mb-1">{% if tempo_medio is not none %}{{ tempo_medio }}min{% else %}—{% endif %}</h3>
+              <p class="text-muted mb-0">Tempo Médio</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Gráficos -->
+  <div class="row g-4 mb-4">
+    <!-- Gráfico de Pizza - Tipo de Paciente -->
+    <div class="col-lg-6">
+      <div class="card chart-card">
+        <div class="card-header d-flex justify-content-between align-items-center">
+          <h5 class="mb-0">
+            <i class="fas fa-chart-pie me-2"></i>Distribuição por Tipo
+          </h5>
+          <div class="btn-group" role="group">
+            <button type="button" class="btn chart-toggle active" onclick="toggleChart('tipo', 'pie')">Pizza</button>
+            <button type="button" class="btn chart-toggle" onclick="toggleChart('tipo', 'bar')">Barras</button>
+          </div>
+        </div>
+        <div class="card-body">
+          <div class="chart-container">
+            <canvas id="chartTipo"></canvas>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Gráfico de Pizza - Primeira Vez -->
+    <div class="col-lg-6">
+      <div class="card chart-card">
+        <div class="card-header d-flex justify-content-between align-items-center">
+          <h5 class="mb-0">
+            <i class="fas fa-user-clock me-2"></i>Primeira Vez vs Recorrentes
+          </h5>
+          <div class="btn-group" role="group">
+            <button type="button" class="btn chart-toggle active" onclick="toggleChart('vez', 'pie')">Pizza</button>
+            <button type="button" class="btn chart-toggle" onclick="toggleChart('vez', 'bar')">Barras</button>
+          </div>
+        </div>
+        <div class="card-body">
+          <div class="chart-container">
+            <canvas id="chartVez"></canvas>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Gráfico de Linha - Senhas por Dia -->
+  <div class="row g-4 mb-4">
+    <div class="col-12">
+      <div class="card chart-card">
+        <div class="card-header">
+          <h5 class="mb-0">
+            <i class="fas fa-chart-line me-2"></i>Senhas Geradas por Dia (Últimos 30 dias)
+          </h5>
+        </div>
+        <div class="card-body">
+          <div class="chart-container">
+            <canvas id="chartDias"></canvas>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Tabela de Chamadas por Usuário -->
+  <div class="row g-4">
+    <div class="col-12">
+      <div class="card chart-card">
+        <div class="card-header">
+          <h5 class="mb-0">
+            <i class="fas fa-users me-2"></i>Chamadas por Usuário
+          </h5>
+        </div>
+        <div class="card-body">
+          <div class="table-responsive">
+            <table class="table table-hover">
+              <thead class="table-light">
+                <tr>
+                  <th>Usuário</th>
+                  <th>Total de Chamadas</th>
+                  <th>Percentual</th>
+                  <th>Progresso</th>
+                </tr>
+              </thead>
+              <tbody>
+                {% for usuario in chamadas_por_usuario %}
+                <tr>
+                  <td>
+                    <div class="d-flex align-items-center">
+                      <div class="avatar-sm me-2">
+                        <i class="fas fa-user-circle fa-lg text-primary"></i>
+                      </div>
+                      <span class="fw-medium">{{ usuario.nome }}</span>
+                    </div>
+                  </td>
+                  <td>
+                    <span class="badge bg-primary">{{ usuario.total_chamadas }}</span>
+                  </td>
+                  <td>
+                    {% set percentual = (usuario.total_chamadas / senhas_chamadas * 100) if senhas_chamadas > 0 else 0 %}
+                    <span class="fw-medium">{{ "%.1f"|format(percentual) }}%</span>
+                  </td>
+                  <td style="width: 200px;">
+                    <div class="progress progress-custom">
+                      <div class="progress-bar bg-primary" style="width: {{ percentual }}%"></div>
+                    </div>
+                  </td>
+                </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+// Dados para os gráficos
+const dadosTipo = {
+  labels: ['Normais', 'Preferenciais'],
+  datasets: [{
+    data: [{{ normais }}, {{ preferenciais }}],
+    backgroundColor: ['#6c757d', '#dc3545'],
+    borderColor: ['#5a6268', '#c82333'],
+    borderWidth: 2
+  }]
+};
+
+const dadosVez = {
+  labels: ['Primeira Vez', 'Recorrentes'],
+  datasets: [{
+    data: [{{ primeira_vez }}, {{ recorrentes }}],
+    backgroundColor: ['#28a745', '#17a2b8'],
+    borderColor: ['#1e7e34', '#117a8b'],
+    borderWidth: 2
+  }]
+};
+
+const dadosDias = {
+  labels: [{% for item in senhas_por_dia %}'{{ item.data.strftime("%d/%m") }}'{% if not loop.last %}, {% endif %}{% endfor %}],
+  datasets: [{
+    label: 'Senhas Geradas',
+    data: [{% for item in senhas_por_dia %}{{ item.total }}{% if not loop.last %}, {% endif %}{% endfor %}],
+    borderColor: '#667eea',
+    backgroundColor: 'rgba(102, 126, 234, 0.1)',
+    borderWidth: 3,
+    fill: true,
+    tension: 0.4
+  }]
+};
+
+// Configurações dos gráficos
+const configTipo = {
+  type: 'pie',
+  data: dadosTipo,
+  options: {
+    responsive: true,
+    maintainAspectRatio: false,
+    plugins: {
+      legend: {
+        position: 'bottom'
+      }
+    }
+  }
+};
+
+const configVez = {
+  type: 'pie',
+  data: dadosVez,
+  options: {
+    responsive: true,
+    maintainAspectRatio: false,
+    plugins: {
+      legend: {
+        position: 'bottom'
+      }
+    }
+  }
+};
+
+const configDias = {
+  type: 'line',
+  data: dadosDias,
+  options: {
+    responsive: true,
+    maintainAspectRatio: false,
+    plugins: {
+      legend: {
+        display: false
+      }
+    },
+    scales: {
+      y: {
+        beginAtZero: true,
+        ticks: {
+          stepSize: 1
+        }
+      }
+    }
+  }
+};
+
+// Criar gráficos
+let chartTipo = new Chart(document.getElementById('chartTipo'), configTipo);
+let chartVez = new Chart(document.getElementById('chartVez'), configVez);
+let chartDias = new Chart(document.getElementById('chartDias'), configDias);
+
+// Função para alternar tipo de gráfico
+function toggleChart(tipo, chartType) {
+  const buttons = event.target.parentElement.querySelectorAll('.chart-toggle');
+  buttons.forEach(btn => btn.classList.remove('active'));
+  event.target.classList.add('active');
+  
+  if (tipo === 'tipo') {
+    chartTipo.destroy();
+    configTipo.type = chartType;
+    chartTipo = new Chart(document.getElementById('chartTipo'), configTipo);
+  } else if (tipo === 'vez') {
+    chartVez.destroy();
+    configVez.type = chartType;
+    chartVez = new Chart(document.getElementById('chartVez'), configVez);
+  }
+}
+
+// Função para exportar dashboard
+function exportarDashboard() {
+  // Implementar exportação do dashboard
+  alert('Funcionalidade de exportação será implementada em breve!');
+}
+
+// Função para limpar dados antigos
+function limparDadosTeste() {
+  if (confirm('Tem certeza que deseja remover todas as senhas antigas (anteriores a 7 dias)?\n\nEsta ação não pode ser desfeita!')) {
+    const form = document.createElement('form');
+    form.method = 'POST';
+    form.action = '{{ url_for("main.limpar_dados_teste") }}';
+    document.body.appendChild(form);
+    form.submit();
+  }
+}
+</script>
+{% endblock %} 

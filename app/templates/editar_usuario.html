@@ -2,37 +2,369 @@
 {% block title %}Editar Usuário{% endblock %}
 
 {% block content %}
-<div class="container">
-  <h2 class="mb-4">Editar Usuário</h2>
+<div class="container-fluid">
+  <div class="row justify-content-center">
+    <div class="col-lg-8 col-xl-6">
+      <!-- Header -->
+      <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+          <h2 class="fw-bold text-primary mb-1">
+            <i class="fas fa-user-edit me-2"></i>Editar Usuário
+          </h2>
+          <p class="text-muted mb-0">Atualize as informações do usuário {{ usuario.nome }}</p>
+        </div>
+        <div class="d-flex align-items-center gap-2">
+          <span class="badge bg-secondary">
+            <i class="fas fa-user me-1"></i>ID: {{ usuario.id }}
+          </span>
+        </div>
+      </div>
 
-  <form method="post" class="row g-4">
-    <div class="col-md-6">
-      <label class="form-label">Nome</label>
-      <input type="text" name="nome" value="{{ usuario.nome }}" class="form-control" required>
-    </div>
+      <!-- Form Card -->
+      <div class="card shadow-sm border-0">
+        <div class="card-header bg-light border-0">
+          <h5 class="card-title mb-0">
+            <i class="fas fa-info-circle me-2 text-primary"></i>Informações do Usuário
+          </h5>
+        </div>
+        <div class="card-body p-4">
+          <form method="post" id="editar-form" class="needs-validation" novalidate>
+            <div class="row g-3">
+              <!-- Nome -->
+              <div class="col-md-6">
+                <label for="nome" class="form-label fw-medium">
+                  <i class="fas fa-user me-1"></i>Nome Completo
+                </label>
+                <input 
+                  type="text" 
+                  name="nome" 
+                  id="nome" 
+                  value="{{ usuario.nome }}" 
+                  class="form-control form-control-lg" 
+                  required
+                  placeholder="Digite o nome completo"
+                >
+                <div class="invalid-feedback">
+                  Por favor, informe o nome completo.
+                </div>
+              </div>
 
-    <div class="col-md-6">
-      <label class="form-label">E-mail</label>
-      <input type="email" name="email" value="{{ usuario.email }}" class="form-control" required>
-    </div>
+              <!-- Email -->
+              <div class="col-md-6">
+                <label for="email" class="form-label fw-medium">
+                  <i class="fas fa-envelope me-1"></i>E-mail
+                </label>
+                <input 
+                  type="email" 
+                  name="email" 
+                  id="email" 
+                  value="{{ usuario.email }}" 
+                  class="form-control form-control-lg" 
+                  required
+                  placeholder="exemplo@email.com"
+                >
+                <div class="invalid-feedback">
+                  Por favor, informe um e-mail válido.
+                </div>
+              </div>
 
-    <div class="col-md-6">
-      <label class="form-label">Nova senha</label>
-      <input type="password" name="senha" class="form-control" placeholder="Deixe em branco para manter">
-    </div>
+              <!-- Nova Senha -->
+              <div class="col-md-6">
+                <label for="senha" class="form-label fw-medium">
+                  <i class="fas fa-lock me-1"></i>Nova Senha
+                </label>
+                <div class="input-group">
+                  <input 
+                    type="password" 
+                    name="senha" 
+                    id="senha" 
+                    class="form-control form-control-lg" 
+                    placeholder="Deixe em branco para manter"
+                    minlength="6"
+                  >
+                  <button 
+                    class="btn btn-outline-secondary" 
+                    type="button" 
+                    id="toggle-password"
+                    title="Mostrar/Ocultar senha"
+                  >
+                    <i class="fas fa-eye"></i>
+                  </button>
+                </div>
+                <div class="invalid-feedback">
+                  A senha deve ter pelo menos 6 caracteres.
+                </div>
+                <div class="form-text">
+                  <i class="fas fa-info-circle me-1"></i>
+                  Deixe em branco para manter a senha atual
+                </div>
+              </div>
 
-    <div class="col-md-6">
-      <label class="form-label">Tipo de usuário</label>
-      <select name="tipo" class="form-select">
-        <option value="usuario" {% if usuario.tipo == 'usuario' %}selected{% endif %}>Usuário padrão</option>
-        <option value="admin" {% if usuario.tipo == 'admin' %}selected{% endif %}>Administrador</option>
-      </select>
-    </div>
+              <!-- Confirmar Nova Senha -->
+              <div class="col-md-6">
+                <label for="confirmar-senha" class="form-label fw-medium">
+                  <i class="fas fa-lock me-1"></i>Confirmar Nova Senha
+                </label>
+                <div class="input-group">
+                  <input 
+                    type="password" 
+                    id="confirmar-senha" 
+                    class="form-control form-control-lg" 
+                    placeholder="Confirme a nova senha"
+                  >
+                  <button 
+                    class="btn btn-outline-secondary" 
+                    type="button" 
+                    id="toggle-confirm-password"
+                    title="Mostrar/Ocultar senha"
+                  >
+                    <i class="fas fa-eye"></i>
+                  </button>
+                </div>
+                <div class="invalid-feedback" id="senha-confirm-feedback">
+                  As senhas não coincidem.
+                </div>
+              </div>
 
-    <div class="col-12 d-flex justify-content-between mt-4">
-      <button class="btn btn-success">Salvar</button>
-      <a href="{{ url_for('main.listar_usuarios') }}" class="btn btn-secondary">Cancelar</a>
+              <!-- Tipo de Usuário -->
+              <div class="col-12">
+                <label for="tipo" class="form-label fw-medium">
+                  <i class="fas fa-user-tag me-1"></i>Tipo de Usuário
+                </label>
+                <select name="tipo" id="tipo" class="form-select form-select-lg" required>
+                  <option value="usuario" {% if usuario.tipo.value == 'usuario' %}selected{% endif %}>
+                    <i class="fas fa-user me-2"></i>Usuário Padrão
+                  </option>
+                  <option value="admin" {% if usuario.tipo.value == 'admin' %}selected{% endif %}>
+                    <i class="fas fa-shield-alt me-2"></i>Administrador
+                  </option>
+                </select>
+                <div class="invalid-feedback">
+                  Por favor, selecione o tipo de usuário.
+                </div>
+                <div class="form-text">
+                  <i class="fas fa-info-circle me-1"></i>
+                  Administradores têm acesso completo ao sistema
+                </div>
+              </div>
+            </div>
+
+            <!-- Action Buttons -->
+            <div class="d-flex justify-content-between align-items-center mt-4 pt-3 border-top">
+              <a href="{{ url_for('main.listar_usuarios') }}" class="btn btn-outline-secondary d-flex align-items-center gap-2">
+                <i class="fas fa-arrow-left"></i>
+                <span>Cancelar</span>
+              </a>
+              <button type="submit" class="btn btn-success btn-lg d-flex align-items-center gap-2">
+                <i class="fas fa-save"></i>
+                <span>Salvar Alterações</span>
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+
+      <!-- User Info Card -->
+      <div class="card mt-4 border-0 bg-light">
+        <div class="card-body">
+          <h6 class="card-title text-primary">
+            <i class="fas fa-user-circle me-2"></i>Informações Atuais
+          </h6>
+          <div class="row g-3">
+            <div class="col-md-6">
+              <div class="d-flex align-items-center">
+                <i class="fas fa-calendar-alt text-muted me-2"></i>
+                <div>
+                  <small class="text-muted d-block">Data de Cadastro</small>
+                  <span class="fw-medium">{{ usuario.data_cadastro.strftime('%d/%m/%Y') if usuario.data_cadastro else 'N/A' }}</span>
+                </div>
+              </div>
+            </div>
+            <div class="col-md-6">
+              <div class="d-flex align-items-center">
+                <i class="fas fa-clock text-muted me-2"></i>
+                <div>
+                  <small class="text-muted d-block">Último Acesso</small>
+                  <span class="fw-medium">{{ usuario.ultimo_acesso.strftime('%d/%m/%Y %H:%M') if usuario.ultimo_acesso else 'Nunca' }}</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Warning Card (if editing own account) -->
+      {% if usuario.id == current_user.id %}
+      <div class="card mt-4 border-warning">
+        <div class="card-body">
+          <h6 class="card-title text-warning">
+            <i class="fas fa-exclamation-triangle me-2"></i>Atenção
+          </h6>
+          <p class="card-text small mb-0">
+            Você está editando sua própria conta. Tenha cuidado ao alterar o tipo de usuário ou senha.
+          </p>
+        </div>
+      </div>
+      {% endif %}
     </div>
-  </form>
+  </div>
 </div>
+
+<!-- Success Toast -->
+<div class="toast-container position-fixed bottom-0 end-0 p-3">
+  <div id="success-toast" class="toast align-items-center text-white bg-success border-0" role="alert">
+    <div class="d-flex">
+      <div class="toast-body">
+        <i class="fas fa-check-circle me-2"></i>
+        Usuário atualizado com sucesso!
+      </div>
+      <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
+    </div>
+  </div>
+</div>
+
+<style>
+/* Card Improvements */
+.card {
+  border-radius: 12px;
+  transition: all 0.2s ease;
+}
+
+.card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(0,0,0,0.1) !important;
+}
+
+/* Form Controls */
+.form-control, .form-select {
+  border-radius: 8px;
+  border: 2px solid #e9ecef;
+  transition: all 0.2s ease;
+}
+
+.form-control:focus, .form-select:focus {
+  border-color: #0d6efd;
+  box-shadow: 0 0 0 0.2rem rgba(13, 110, 253, 0.25);
+}
+
+.form-control.is-invalid {
+  border-color: #dc3545;
+}
+
+.form-control.is-valid {
+  border-color: #198754;
+}
+
+/* Buttons */
+.btn {
+  border-radius: 8px;
+  font-weight: 500;
+  transition: all 0.2s ease;
+}
+
+.btn:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+}
+
+/* Input Group */
+.input-group .btn {
+  border-radius: 0 8px 8px 0;
+}
+
+.input-group .form-control {
+  border-radius: 8px 0 0 8px;
+}
+
+/* Toast */
+.toast {
+  border-radius: 8px;
+  box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+}
+
+/* Warning Card */
+.card.border-warning {
+  border-width: 2px;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .d-flex.justify-content-between {
+    flex-direction: column;
+    gap: 1rem;
+  }
+  
+  .btn {
+    width: 100%;
+  }
+}
+</style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+  const form = document.getElementById('editar-form');
+  const senha = document.getElementById('senha');
+  const confirmarSenha = document.getElementById('confirmar-senha');
+  const togglePassword = document.getElementById('toggle-password');
+  const toggleConfirmPassword = document.getElementById('toggle-confirm-password');
+  
+  // Toggle password visibility
+  function togglePasswordVisibility(input, button) {
+    const type = input.type === 'password' ? 'text' : 'password';
+    input.type = type;
+    button.innerHTML = type === 'password' ? '<i class="fas fa-eye"></i>' : '<i class="fas fa-eye-slash"></i>';
+  }
+  
+  togglePassword.addEventListener('click', () => togglePasswordVisibility(senha, togglePassword));
+  toggleConfirmPassword.addEventListener('click', () => togglePasswordVisibility(confirmarSenha, toggleConfirmPassword));
+  
+  // Password confirmation validation (only if password is being changed)
+  function validatePasswordMatch() {
+    if (senha.value && senha.value !== confirmarSenha.value) {
+      confirmarSenha.setCustomValidity('As senhas não coincidem');
+    } else {
+      confirmarSenha.setCustomValidity('');
+    }
+  }
+  
+  senha.addEventListener('input', validatePasswordMatch);
+  confirmarSenha.addEventListener('input', validatePasswordMatch);
+  
+  // Form validation
+  form.addEventListener('submit', function(event) {
+    if (!form.checkValidity()) {
+      event.preventDefault();
+      event.stopPropagation();
+    } else {
+      // Show loading state
+      const submitBtn = form.querySelector('button[type="submit"]');
+      const originalText = submitBtn.innerHTML;
+      submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Salvando...';
+      submitBtn.disabled = true;
+      
+      // Re-enable after a delay (in case of error)
+      setTimeout(() => {
+        submitBtn.innerHTML = originalText;
+        submitBtn.disabled = false;
+      }, 5000);
+    }
+    
+    form.classList.add('was-validated');
+  });
+  
+  // Real-time validation feedback
+  const inputs = form.querySelectorAll('input, select');
+  inputs.forEach(input => {
+    input.addEventListener('blur', function() {
+      if (this.checkValidity()) {
+        this.classList.add('is-valid');
+        this.classList.remove('is-invalid');
+      } else {
+        this.classList.add('is-invalid');
+        this.classList.remove('is-valid');
+      }
+    });
+  });
+});
+</script>
 {% endblock %}

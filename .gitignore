@@ -1,1 +1,76 @@
+# Ambiente virtual
 venv/
+env/
+ENV/
+
+# Arquivos Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+
+# Banco de dados
+*.db
+*.sqlite
+*.sqlite3
+instance/
+
+# Logs
+*.log
+logs/
+
+# Arquivos de configuração local
+.env
+.env.local
+.env.production
+
+# Backups
+backups/
+
+# Arquivos temporários
+*.tmp
+*.temp
+.DS_Store
+Thumbs.db
+
+# IDEs
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Arquivos de instalação
+*.exe
+*.msi
+*.dmg
+*.pkg
+
+# Arquivos de compressão
+*.zip
+*.tar.gz
+*.rar
+
+# Arquivos de documentação temporários
+*.md~
+*.txt~
+
+# Arquivos de teste
+test_*.py
+*_test.py

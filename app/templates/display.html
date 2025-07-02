@@ -6,116 +6,506 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Display de Senhas</title>
   <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700;900&display=swap" rel="stylesheet">
+
   <style>
+    * {
+      box-sizing: border-box;
+    }
+
     html, body {
-      margin: 0; padding: 0; height: 100%;
+      margin: 0; 
+      padding: 0; 
+      height: 100%;
       background: {{ config.cor_fundo }};
       color: {{ config.cor_texto }};
-      font-family: sans-serif;
+      font-family: 'Montserrat', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
       overflow: hidden;
     }
-    body { display: flex; flex-direction: column; }
 
-    .painel-container {
-      flex: 1; display: flex;
-      width: 100%; height: calc(100vh - 100px);
+    body {
+      display: flex;
+      flex-direction: column;
     }
-    #video-lateral {
-      width: 60%; height: 100%; overflow: hidden;
-    }
-    #video-lateral video {
-      width: 100%; height: 100%; object-fit: cover;
-    }
-    .senha-coluna {
-      width: 40%; display: flex; flex-direction: column;
-      align-items: center; justify-content: space-evenly;
-      padding: .5rem 0;
-      background: {{ config.cor_fundo }};
-      border-left: 3px solid {{ config.contorno_senha }};
-      border-top: 3px solid {{ config.contorno_senha }};
-      border-bottom: 3px solid {{ config.contorno_senha }};
-    }
-    .senha-item {
-      font-size: 2.7rem;
-      border-bottom: 2px solid {{ config.linha_senha }};
-      padding: 1.1rem 0;
-      width: 100%; text-align: center;
-      background: {{ config.fundo_senha }};
-    }
-    .senha-item.ultima {
-      font-size: 3.4rem;
-      color: {{ config.destaque_senha }};
-      font-weight: bold;
-    }
-    .senha-item.ultima span {
-      animation: piscar 2s infinite; display: inline-block;
-    }
-    @keyframes piscar { 0%,100%{opacity:1;}50%{opacity:0.4;} }
 
-    .rodape-container {
-      height: 100px; background: {{ config.cor_rodape }};
-      display: flex; align-items: center; justify-content: space-between;
+    /* Header com título e hora */
+    .header-container {
+      height: 80px;
+      background: linear-gradient(135deg, {{ config.cor_rodape }}, {{ config.cor_rodape }}dd);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
       padding: 0 2rem;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.3);
+      position: relative;
+      z-index: 10;
     }
-    .logo-placeholder img { height: 80px; width: auto; }
-    .marquee-wrapper { flex: 1; overflow: hidden; margin: 0 2rem; }
-    .marquee-text {
-      white-space: nowrap; padding-left: 50%;
-      animation: marquee 26s linear infinite;
-      font-size: 2.4rem; font-weight: bold;
+
+    .header-title {
+      font-size: 2.2rem;
+      font-weight: 700;
       color: {{ config.cor_bemvindo }};
+      text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
+      letter-spacing: 1px;
     }
-    @keyframes marquee { 0% { transform: translateX(100%); } 100% { transform: translateX(-100%); } }
 
-    .hora-atual {
-      min-width: 100px; text-align: right;
-      font-size: 2.2rem; font-weight: bold;
+    .header-time {
+      font-size: 2rem;
+      font-weight: 600;
       color: {{ config.cor_hora }};
+      text-shadow: 1px 1px 2px rgba(0,0,0,0.3);
+      min-width: 120px;
+      text-align: center;
+      background: rgba(255,255,255,0.1);
+      padding: 0.5rem 1rem;
+      border-radius: 8px;
+      backdrop-filter: blur(10px);
     }
 
-    /* Overlay de chamada */
-    #senha-chamada {
-      position: fixed; top: 0; left: 0;
-      width: 100vw; height: 100vh;
-      background: rgba(0,0,0,0.85); color: white;
-      display: none; opacity: 0;
-      align-items: center; justify-content: center;
-      font-size: 10rem; z-index: 1000;
-      font-weight: bold; transition: opacity .4s ease;
-      text-align: center;
+    /* Container principal */
+    .painel-container {
+      flex: 1;
+      display: flex;
+      width: 100vw;
+      max-width: 100vw;
+      height: calc(100vh - 180px);
+      overflow: hidden;
     }
-    #senha-chamada.show { display: flex; opacity: 1; }
+
+    /* Área do vídeo */
+    #video-lateral {
+      flex: 2 1 0;
+      min-width: 0;
+      height: 100%;
+      overflow: hidden;
+      position: relative;
+    }
+
+    #video-lateral::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: linear-gradient(45deg, rgba(0,0,0,0.2), transparent);
+      z-index: 1;
+      pointer-events: none;
+    }
+
+    #video-lateral video {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      filter: brightness(1.1) contrast(1.1);
+    }
+
+    /* Coluna de senhas */
+    .senha-coluna {
+      flex: 1 1 420px;
+      max-width: 600px;
+      min-width: 340px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: flex-start;
+      padding: 2rem 1rem;
+      background: linear-gradient(180deg, 
+        rgba(0, 0, 0, 0.95) 0%, 
+        rgba(20, 20, 20, 0.9) 50%, 
+        rgba(0, 0, 0, 0.95) 100%);
+      border-left: 4px solid {{ config.contorno_senha }};
+      border-top: none;
+      border-bottom: none;
+      box-shadow: -5px 0 15px rgba(0,0,0,0.5);
+      position: relative;
+      overflow-y: auto;
+    }
+
+    .senha-coluna::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 16px;
+      background: linear-gradient(180deg, rgba(0,0,0,0.7), transparent);
+      z-index: 2;
+    }
+
+    .senha-coluna::after {
+      content: '';
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      height: 16px;
+      background: linear-gradient(0deg, rgba(0,0,0,0.7), transparent);
+      z-index: 2;
+    }
+
+    /* Título da coluna */
+    .senha-titulo {
+      font-size: 2.4rem;
+      font-weight: 700;
+      color: {{ config.cor_bemvindo }};
+      text-align: center;
+      margin-bottom: 2rem;
+      text-shadow: 2px 2px 4px rgba(0,0,0,0.8);
+      letter-spacing: 2px;
+      position: relative;
+      z-index: 3;
+    }
+
+    .senha-titulo::after {
+      content: '';
+      position: absolute;
+      bottom: -10px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 60px;
+      height: 3px;
+      background: {{ config.contorno_senha }};
+      border-radius: 2px;
+    }
+
+    /* Itens de senha */
+    .senha-item {
+      font-size: 2.6rem;
+      font-weight: 600;
+      padding: 1.2rem 1.5rem;
+      width: 98%;
+      max-width: 540px;
+      margin-left: auto;
+      margin-right: auto;
+      text-align: left;
+      background: linear-gradient(135deg, 
+        rgba(40, 40, 40, 0.97) 0%, 
+        rgba(30, 30, 30, 0.93) 100%);
+      border: 2px solid {{ config.linha_senha }};
+      border-radius: 18px;
+      margin: 1.2rem 0;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.18);
+      transition: all 0.3s cubic-bezier(.4,0,.2,1);
+      position: relative;
+      z-index: 3;
+      backdrop-filter: blur(3px);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 1.5rem;
+    }
+
+    .senha-item:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 12px rgba(0,0,0,0.4);
+    }
+
+    .senha-item.ultima {
+      font-size: 3.6rem;
+      color: {{ config.destaque_senha or '#2196f3' }};
+      font-weight: 800;
+      background: linear-gradient(135deg, 
+        rgba(60, 0, 0, 0.97) 0%, 
+        rgba(30, 0, 0, 0.93) 100%);
+      border: 3px solid {{ config.destaque_senha or '#2196f3' }};
+      box-shadow: 0 0 10px {{ config.destaque_senha or '#2196f3' }}, 0 2px 8px rgba(0,0,0,0.12);
+      animation: pulse 2s infinite;
+    }
+
+    .senha-item.ultima span {
+      animation: piscar 1.5s infinite;
+      display: inline-block;
+      text-shadow: 0 0 4px {{ config.destaque_senha or '#2196f3' }};
+    }
+
+    .senha-item .senha-label {
+      font-weight: 700;
+      font-size: 2.6rem;
+      letter-spacing: 1px;
+      flex: 1 1 auto;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .senha-item .guiche-label {
+      font-size: 1.5rem;
+      font-weight: 600;
+      color: {{ config.destaque_senha or '#2196f3' }};
+      background: rgba(33,150,243,0.08);
+      border-radius: 8px;
+      padding: 0.4em 1.1em;
+      margin-left: 0.5em;
+      min-width: 90px;
+      text-align: center;
+      letter-spacing: 1px;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.08);
+      border: 1.5px solid {{ config.destaque_senha or '#2196f3' }};
+      display: inline-block;
+    }
+    .senha-item.ultima .guiche-label {
+      font-size: 1.7rem;
+      font-weight: 800;
+      background: rgba(33,150,243,0.18);
+      border-width: 2px;
+    }
+
+    @keyframes piscar {
+      0%, 100% { 
+        opacity: 1; 
+        transform: scale(1);
+      }
+      50% { 
+        opacity: 0.7; 
+        transform: scale(1.05);
+      }
+    }
+
+    @keyframes pulse {
+      0%, 100% {
+        box-shadow: 0 0 20px rgba(255, 0, 0, 0.3);
+      }
+      50% {
+        box-shadow: 0 0 30px rgba(255, 0, 0, 0.6);
+      }
+    }
+
+    /* Rodapé */
+    .rodape-container {
+      height: 100px;
+      background: linear-gradient(135deg, {{ config.cor_rodape }}, {{ config.cor_rodape }}ee);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 2rem;
+      box-shadow: 0 -2px 10px rgba(0,0,0,0.3);
+      position: relative;
+      z-index: 10;
+    }
+
+    .logo-placeholder {
+      display: flex;
+      align-items: center;
+    }
+
+    .logo-placeholder img {
+      height: 70px;
+      width: auto;
+      filter: drop-shadow(2px 2px 4px rgba(0,0,0,0.3));
+      transition: transform 0.3s ease;
+    }
+
+    .logo-placeholder img:hover {
+      transform: scale(1.05);
+    }
+
+    .marquee-wrapper {
+      flex: 1;
+      overflow: hidden;
+      margin: 0 2rem;
+      position: relative;
+    }
+
+    .marquee-wrapper::before,
+    .marquee-wrapper::after {
+      content: '';
+      position: absolute;
+      top: 0;
+      bottom: 0;
+      width: 50px;
+      z-index: 2;
+      pointer-events: none;
+    }
+
+    .marquee-wrapper::before {
+      left: 0;
+      background: linear-gradient(90deg, {{ config.cor_rodape }}, transparent);
+    }
+
+    .marquee-wrapper::after {
+      right: 0;
+      background: linear-gradient(270deg, {{ config.cor_rodape }}, transparent);
+    }
+
+    .marquee-text {
+      white-space: nowrap;
+      padding-left: 50%;
+      animation: marquee 30s linear infinite;
+      font-size: 2.2rem;
+      font-weight: 600;
+      color: {{ config.cor_bemvindo }};
+      text-shadow: 1px 1px 2px rgba(0,0,0,0.5);
+      letter-spacing: 1px;
+    }
+
+    @keyframes marquee {
+      0% { transform: translateX(100%); }
+      100% { transform: translateX(-100%); }
+    }
+
+    /* Overlay de senha chamada */
+    #senha-chamada {
+      position: fixed;
+      top: 0; 
+      left: 0;
+      width: 100vw; 
+      height: 100vh;
+      background: linear-gradient(135deg, 
+        rgba(0,0,0,0.95) 0%, 
+        rgba(20,0,0,0.9) 100%);
+      color: white;
+      display: none; 
+      opacity: 0;
+      align-items: center; 
+      justify-content: center;
+      font-size: 12rem; 
+      z-index: 1000;
+      font-weight: 900;
+      transition: all 0.5s ease;
+      text-align: center;
+      backdrop-filter: blur(10px);
+    }
+
+    #senha-chamada.show {
+      display: flex;
+      opacity: 1;
+      animation: chamadaEntrada 0.5s ease-out;
+    }
+
+    @keyframes chamadaEntrada {
+      0% {
+        opacity: 0;
+        transform: scale(0.8);
+      }
+      100% {
+        opacity: 1;
+        transform: scale(1);
+      }
+    }
 
     /* Overlay de reconexão */
     #reconnect-overlay {
-      position: fixed; inset: 0;
-      background: rgba(0,0,0,0.75);
+      position: fixed;
+      inset: 0;
+      background: linear-gradient(135deg, 
+        rgba(0,0,0,0.9) 0%, 
+        rgba(40,0,0,0.8) 100%);
       display: none;
-      align-items: center; justify-content: center;
+      align-items: center;
+      justify-content: center;
       flex-direction: column;
-      color: #fff; z-index: 1500;
-      font-size: 2rem;
+      color: #fff;
+      z-index: 1500;
+      font-size: 2.2rem;
+      backdrop-filter: blur(15px);
     }
+
+    .reconnect-message {
+      text-align: center;
+      margin-bottom: 2rem;
+      text-shadow: 2px 2px 4px rgba(0,0,0,0.8);
+    }
+
     .reconnect-progress {
-      width: 80%; max-width: 600px; margin-top: 1rem;
-      background: #333; border-radius: 5px; overflow: hidden;
-      height: 8px;
+      width: 80%;
+      max-width: 600px;
+      background: rgba(255,255,255,0.1);
+      border-radius: 10px;
+      overflow: hidden;
+      height: 12px;
+      box-shadow: inset 0 2px 4px rgba(0,0,0,0.3);
     }
+
     .reconnect-fill {
-      width: 0; height: 100%;
-      background: #ffc107;
+      width: 0;
+      height: 100%;
+      background: linear-gradient(90deg, #ffc107, #ff9800);
       animation: infinite-fill 2s linear infinite;
+      border-radius: 10px;
     }
+
     @keyframes infinite-fill {
-      0%   { width: 0; }
+      0% { width: 0; }
       100% { width: 100%; }
+    }
+
+    /* Scrollbar personalizada */
+    .senha-coluna::-webkit-scrollbar {
+      width: 8px;
+    }
+
+    .senha-coluna::-webkit-scrollbar-track {
+      background: rgba(0,0,0,0.3);
+      border-radius: 4px;
+    }
+
+    .senha-coluna::-webkit-scrollbar-thumb {
+      background: {{ config.contorno_senha }};
+      border-radius: 4px;
+    }
+
+    .senha-coluna::-webkit-scrollbar-thumb:hover {
+      background: {{ config.destaque_senha }};
+    }
+
+    /* Responsividade */
+    @media (max-width: 1200px) {
+      .header-title {
+        font-size: 1.8rem;
+      }
+      
+      .header-time {
+        font-size: 1.6rem;
+      }
+      
+      .senha-titulo {
+        font-size: 2rem;
+      }
+      
+      .senha-item {
+        font-size: 2.4rem;
+      }
+      
+      .senha-item.ultima {
+        font-size: 3rem;
+      }
+    }
+
+    @media (max-width: 768px) {
+      .painel-container {
+        flex-direction: column;
+      }
+      
+      #video-lateral {
+        width: 100%;
+        height: 40%;
+      }
+      
+      .senha-coluna {
+        width: 100%;
+        height: 60%;
+      }
+      
+      .header-container {
+        height: 60px;
+        padding: 0 1rem;
+      }
+      
+      .rodape-container {
+        height: 80px;
+        padding: 0 1rem;
+      }
     }
   </style>
 </head>
 <body>
   <!-- Reconexão -->
   <div id="reconnect-overlay">
-    <div>Conexão perdida. Aguardando o servidor...</div>
+    <div class="reconnect-message">
+      <div style="font-size: 3rem; margin-bottom: 1rem;">📡</div>
+      <div>Conexão perdida</div>
+      <div style="font-size: 1.4rem; opacity: 0.8; margin-top: 0.5rem;">Aguardando o servidor...</div>
+    </div>
     <div class="reconnect-progress">
       <div class="reconnect-fill"></div>
     </div>
@@ -124,6 +514,12 @@
   <!-- Chamada -->
   <div id="senha-chamada"></div>
 
+  <!-- Header -->
+  <div class="header-container">
+    <div class="header-title">SISTEMA DE SENHAS</div>
+    <div class="header-time" id="hora"></div>
+  </div>
+
   <!-- Conteúdo -->
   <div class="painel-container">
     <div id="video-lateral">
@@ -131,7 +527,10 @@
         <source src="{{ url_for('static', filename=config.video_path) }}" type="video/mp4" />
       </video>
     </div>
-    <div class="senha-coluna" id="lista-senhas"></div>
+    <div class="senha-coluna">
+      <div class="senha-titulo">SENHAS CHAMADAS</div>
+      <div id="lista-senhas"></div>
+    </div>
   </div>
 
   <!-- Rodapé -->
@@ -142,15 +541,16 @@
     <div class="marquee-wrapper">
       <div class="marquee-text">{{ config.frase_bemvindo }}</div>
     </div>
-    <div class="hora-atual" id="hora"></div>
   </div>
 
   <!-- Config -->
   <script>
     window.DISPLAY_CONFIG = {
       ultimaChamadaUrl: "{{ url_for('main.ultima_chamada') }}",
-      filaJsonUrl:      "{{ url_for('main.fila_json') }}",
-      pingUrl:          "{{ url_for('main.ping') }}"
+      filaJsonUrl: "{{ url_for('main.fila_json') }}",
+      pingUrl: "{{ url_for('main.ping') }}",
+      vozSelecionada: "{{ config.voz_azure or 'pt-BR-FranciscaNeural' }}",
+      destaqueSenha: "{{ config.destaque_senha }}"
     };
   </script>
 
@@ -182,7 +582,7 @@
     checkServer();
   </script>
 
-  <!-- Display JS (versão 1.6) -->
-  <script src="{{ url_for('static', filename='js/display.js') }}?v=1.6"></script>
+  <!-- JS -->
+  <script src="{{ url_for('static', filename='js/display.js') }}?v=1.7"></script>
 </body>
 </html>

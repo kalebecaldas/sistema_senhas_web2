@@ -1,0 +1,354 @@
+{% extends "base.html" %}
+{% block title %}Relatório Personalizado{% endblock %}
+
+{% block content %}
+<div class="container-fluid" style="padding-bottom: 2rem;">
+  <!-- Header -->
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+      <h2 class="fw-bold text-primary mb-1">
+        <i class="fas fa-file-alt me-2"></i>Relatório Personalizado
+      </h2>
+      <p class="text-muted mb-0">Crie relatórios específicos com filtros avançados</p>
+    </div>
+    <a href="{{ url_for('main.relatorios') }}" class="btn btn-outline-secondary d-flex align-items-center gap-2">
+      <i class="fas fa-arrow-left"></i>
+      <span>Voltar ao Dashboard</span>
+    </a>
+  </div>
+
+  <!-- Formulário de Filtros -->
+  <div class="row">
+    <div class="col-lg-8">
+      <div class="card shadow-sm border-0">
+        <div class="card-header bg-light border-0">
+          <h5 class="card-title mb-0">
+            <i class="fas fa-filter me-2 text-primary"></i>Filtros do Relatório
+          </h5>
+        </div>
+        <div class="card-body">
+          <form method="post" action="{{ url_for('main.gerar_relatorio') }}" id="relatorio-form">
+            <div class="row g-3">
+              <!-- Período -->
+              <div class="col-md-6">
+                <label for="data_inicio" class="form-label fw-medium">
+                  <i class="fas fa-calendar me-1"></i>Data de Início
+                </label>
+                <input type="date" name="data_inicio" id="data_inicio" class="form-control">
+                <div class="form-text">
+                  <i class="fas fa-info-circle me-1"></i>
+                  Deixe em branco para incluir desde o início
+                </div>
+              </div>
+
+              <div class="col-md-6">
+                <label for="data_fim" class="form-label fw-medium">
+                  <i class="fas fa-calendar me-1"></i>Data de Fim
+                </label>
+                <input type="date" name="data_fim" id="data_fim" class="form-control">
+                <div class="form-text">
+                  <i class="fas fa-info-circle me-1"></i>
+                  Deixe em branco para incluir até hoje
+                </div>
+              </div>
+
+              <!-- Tipo de Paciente -->
+              <div class="col-md-6">
+                <label for="tipo_paciente" class="form-label fw-medium">
+                  <i class="fas fa-user-tag me-1"></i>Tipo de Paciente
+                </label>
+                <select name="tipo_paciente" id="tipo_paciente" class="form-select">
+                  <option value="">Todos os tipos</option>
+                  <option value="normal">Normal</option>
+                  <option value="preferencial">Preferencial</option>
+                </select>
+              </div>
+
+              <!-- Primeira Vez -->
+              <div class="col-md-6">
+                <label for="primeira_vez" class="form-label fw-medium">
+                  <i class="fas fa-user-clock me-1"></i>Primeira Vez
+                </label>
+                <select name="primeira_vez" id="primeira_vez" class="form-select">
+                  <option value="">Todos</option>
+                  <option value="true">Primeira vez</option>
+                  <option value="false">Recorrentes</option>
+                </select>
+              </div>
+
+              <!-- Usuário -->
+              <div class="col-md-6">
+                <label for="usuario_id" class="form-label fw-medium">
+                  <i class="fas fa-user me-1"></i>Usuário que Chamou
+                </label>
+                <select name="usuario_id" id="usuario_id" class="form-select">
+                  <option value="">Todos os usuários</option>
+                  {% for usuario in usuarios %}
+                  <option value="{{ usuario.id }}">{{ usuario.nome }}</option>
+                  {% endfor %}
+                </select>
+              </div>
+
+              <!-- Status -->
+              <div class="col-md-6">
+                <label class="form-label fw-medium">
+                  <i class="fas fa-check-circle me-1"></i>Status
+                </label>
+                <div class="form-check">
+                  <input type="checkbox" name="chamadas_apenas" id="chamadas_apenas" class="form-check-input">
+                  <label for="chamadas_apenas" class="form-check-label">
+                    Apenas senhas chamadas
+                  </label>
+                </div>
+                <div class="form-text">
+                  <i class="fas fa-info-circle me-1"></i>
+                  Se marcado, mostra apenas senhas que foram chamadas
+                </div>
+              </div>
+            </div>
+
+            <!-- Formato do Relatório -->
+            <div class="row mt-4">
+              <div class="col-12">
+                <label class="form-label fw-medium">
+                  <i class="fas fa-file-export me-1"></i>Formato do Relatório
+                </label>
+                <div class="d-flex gap-3">
+                  <div class="form-check">
+                    <input type="radio" name="formato" value="pdf" id="formato_pdf" class="form-check-input" checked>
+                    <label for="formato_pdf" class="form-check-label d-flex align-items-center gap-2">
+                      <i class="fas fa-file-pdf text-danger"></i>
+                      PDF
+                    </label>
+                  </div>
+                  <div class="form-check">
+                    <input type="radio" name="formato" value="excel" id="formato_excel" class="form-check-input">
+                    <label for="formato_excel" class="form-check-label d-flex align-items-center gap-2">
+                      <i class="fas fa-file-excel text-success"></i>
+                      Excel
+                    </label>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Botões -->
+            <div class="d-flex justify-content-between align-items-center mt-4 pt-3 border-top">
+              <button type="button" class="btn btn-outline-secondary" onclick="limparFiltros()">
+                <i class="fas fa-eraser me-1"></i>
+                Limpar Filtros
+              </button>
+              <button type="submit" class="btn btn-primary d-flex align-items-center gap-2">
+                <i class="fas fa-download"></i>
+                <span>Gerar Relatório</span>
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+
+    <!-- Preview e Informações -->
+    <div class="col-lg-4">
+      <!-- Informações do Relatório -->
+      <div class="card shadow-sm border-0 mb-4">
+        <div class="card-header bg-light border-0">
+          <h5 class="card-title mb-0">
+            <i class="fas fa-info-circle me-2 text-primary"></i>Informações
+          </h5>
+        </div>
+        <div class="card-body">
+          <!-- Dicas para Relatórios -->
+          <div class="alert alert-info alert-permanent mb-3">
+            <h6 class="alert-heading">
+              <i class="fas fa-lightbulb me-1"></i>Dicas para Relatórios
+            </h6>
+            <ul class="mb-0 small">
+              <li>Use filtros específicos para relatórios mais precisos</li>
+              <li>PDF inclui resumo estatístico e totais por categoria</li>
+              <li>Excel possui 5 abas: dados, informações, estatísticas, usuários e temporal</li>
+              <li>Relatórios incluem tempo de espera e percentuais</li>
+              <li>Chamadas por usuário são ordenadas por volume</li>
+            </ul>
+          </div>
+          
+          <!-- Informações do Sistema -->
+          <div class="border-top pt-3">
+            <h6 class="fw-medium text-primary mb-2">
+              <i class="fas fa-info-circle me-1"></i>Informações do Sistema
+            </h6>
+            <div class="row g-2 text-center">
+              <div class="col-6">
+                <div class="p-2 bg-light rounded">
+                  <div class="fw-bold text-primary">{{ total_senhas or 0 }}</div>
+                  <small class="text-muted">Total Senhas</small>
+                </div>
+              </div>
+              <div class="col-6">
+                <div class="p-2 bg-light rounded">
+                  <div class="fw-bold text-success">{{ senhas_chamadas or 0 }}</div>
+                  <small class="text-muted">Chamadas</small>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Estatísticas Rápidas -->
+      <div class="card shadow-sm border-0">
+        <div class="card-header bg-light border-0">
+          <h5 class="card-title mb-0">
+            <i class="fas fa-chart-bar me-2 text-primary"></i>Estatísticas Rápidas
+          </h5>
+        </div>
+        <div class="card-body">
+          <div class="row g-2">
+            <div class="col-6">
+              <div class="text-center p-2 bg-light rounded">
+                <div class="fw-bold text-primary">{{ total_senhas or 0 }}</div>
+                <small class="text-muted">Total Senhas</small>
+              </div>
+            </div>
+            <div class="col-6">
+              <div class="text-center p-2 bg-light rounded">
+                <div class="fw-bold text-success">{{ senhas_chamadas or 0 }}</div>
+                <small class="text-muted">Chamadas</small>
+              </div>
+            </div>
+            <div class="col-6">
+              <div class="text-center p-2 bg-light rounded">
+                <div class="fw-bold text-warning">{{ senhas_aguardando or 0 }}</div>
+                <small class="text-muted">Aguardando</small>
+              </div>
+            </div>
+            <div class="col-6">
+              <div class="text-center p-2 bg-light rounded">
+                <div class="fw-bold text-info">{{ usuarios|length }}</div>
+                <small class="text-muted">Usuários</small>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+  const form = document.getElementById('relatorio-form');
+  
+  // Definir data de fim como hoje
+  const hoje = new Date().toISOString().split('T')[0];
+  document.getElementById('data_fim').value = hoje;
+  
+  // Garantir que as informações sejam sempre visíveis
+  const infoCards = document.querySelectorAll('.card');
+  const alertInfo = document.querySelector('.alert-info');
+  
+  infoCards.forEach(card => {
+    card.style.display = 'block';
+    card.style.visibility = 'visible';
+    card.style.opacity = '1';
+  });
+  
+  // Garantir que as dicas sejam sempre visíveis
+  if (alertInfo) {
+    alertInfo.style.display = 'block';
+    alertInfo.style.visibility = 'visible';
+    alertInfo.style.opacity = '1';
+  }
+  
+  // Validação do formulário
+  form.addEventListener('submit', function(e) {
+    const dataInicio = document.getElementById('data_inicio').value;
+    const dataFim = document.getElementById('data_fim').value;
+    
+    if (dataInicio && dataFim && dataInicio > dataFim) {
+      e.preventDefault();
+      alert('A data de início não pode ser maior que a data de fim!');
+      return false;
+    }
+    
+    // Mostrar loading
+    const submitBtn = form.querySelector('button[type="submit"]');
+    const originalText = submitBtn.innerHTML;
+    submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-1"></i>Gerando...';
+    submitBtn.disabled = true;
+    
+    // Restaurar após 3 segundos (caso não haja redirecionamento)
+    setTimeout(() => {
+      submitBtn.innerHTML = originalText;
+      submitBtn.disabled = false;
+    }, 3000);
+  });
+});
+
+function limparFiltros() {
+  document.getElementById('relatorio-form').reset();
+  document.getElementById('data_fim').value = new Date().toISOString().split('T')[0];
+}
+</script>
+
+<style>
+.form-check-input:checked {
+  background-color: #0d6efd;
+  border-color: #0d6efd;
+}
+
+.card {
+  border-radius: 12px;
+  transition: all 0.2s ease;
+}
+
+.card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(0,0,0,0.1) !important;
+}
+
+.form-control, .form-select {
+  border-radius: 8px;
+  border: 2px solid #e9ecef;
+  transition: all 0.2s ease;
+}
+
+.form-control:focus, .form-select:focus {
+  border-color: #0d6efd;
+  box-shadow: 0 0 0 0.2rem rgba(13, 110, 253, 0.25);
+}
+
+.btn {
+  border-radius: 8px;
+  font-weight: 500;
+  transition: all 0.2s ease;
+}
+
+.btn:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+}
+
+/* Garantir que as dicas sejam sempre visíveis */
+.alert-info {
+  display: block !important;
+  visibility: visible !important;
+  opacity: 1 !important;
+}
+
+.card-body .alert-info {
+  display: block !important;
+  visibility: visible !important;
+  opacity: 1 !important;
+}
+
+/* Garantir que alertas permanentes nunca sejam escondidos */
+.alert-permanent {
+  display: block !important;
+  visibility: visible !important;
+  opacity: 1 !important;
+  animation: none !important;
+  transition: none !important;
+}
+</style>
+{% endblock %} 

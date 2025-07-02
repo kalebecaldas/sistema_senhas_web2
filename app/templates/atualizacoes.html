@@ -1,0 +1,394 @@
+{% extends "base.html" %}
+{% block title %}Atualizações do Sistema{% endblock %}
+
+{% block head_extra %}
+<style>
+.update-card {
+  transition: all 0.3s ease;
+  border: none;
+  border-radius: 12px;
+}
+
+.update-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(0,0,0,0.1);
+}
+
+.status-indicator {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  display: inline-block;
+  margin-right: 8px;
+}
+
+.status-up-to-date {
+  background-color: #28a745;
+}
+
+.status-updates-available {
+  background-color: #ffc107;
+}
+
+.status-error {
+  background-color: #dc3545;
+}
+
+.info-badge {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  border-radius: 20px;
+  padding: 4px 12px;
+  font-size: 0.8rem;
+  font-weight: 500;
+}
+
+.version-badge {
+  background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+  color: white;
+  border-radius: 20px;
+  padding: 6px 16px;
+  font-size: 1rem;
+  font-weight: 600;
+}
+
+.update-progress {
+  height: 6px;
+  border-radius: 3px;
+  background: #e9ecef;
+}
+
+.update-progress .progress-bar {
+  border-radius: 3px;
+  background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
+}
+
+.system-info-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 1rem;
+}
+
+.log-container {
+  background: #f8f9fa;
+  border: 1px solid #dee2e6;
+  border-radius: 8px;
+  padding: 1rem;
+  font-family: 'Courier New', monospace;
+  font-size: 0.85rem;
+  max-height: 300px;
+  overflow-y: auto;
+  white-space: pre-wrap;
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid" style="padding-bottom: 2rem;">
+  <!-- Header -->
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+      <h2 class="fw-bold text-primary mb-1">
+        <i class="fas fa-download me-2"></i>Sistema de Atualizações
+      </h2>
+      <p class="text-muted mb-0">Gerencie atualizações e versões do sistema</p>
+    </div>
+    <div class="d-flex gap-2">
+      <button class="btn btn-outline-primary d-flex align-items-center gap-2" onclick="checkUpdates()">
+        <i class="fas fa-sync-alt"></i>
+        <span>Verificar Atualizações</span>
+      </button>
+      <button class="btn btn-success d-flex align-items-center gap-2" id="update-btn" onclick="updateSystem()" style="display: none;">
+        <i class="fas fa-download"></i>
+        <span>Atualizar Sistema</span>
+      </button>
+    </div>
+  </div>
+
+  <!-- Status da Atualização -->
+  <div class="row g-4 mb-4">
+    <div class="col-12">
+      <div class="card update-card shadow-sm">
+        <div class="card-header bg-light border-0">
+          <h5 class="card-title mb-0">
+            <i class="fas fa-info-circle me-2 text-primary"></i>Status do Sistema
+          </h5>
+        </div>
+        <div class="card-body">
+          <div class="row align-items-center">
+            <div class="col-md-6">
+              <div class="d-flex align-items-center mb-3">
+                <span class="status-indicator" id="status-indicator"></span>
+                <span class="fw-medium" id="status-text">Verificando...</span>
+              </div>
+              <div class="version-badge d-inline-block mb-2">
+                Versão {{ system_info.version }}
+              </div>
+              <div class="small text-muted">
+                <i class="fas fa-clock me-1"></i>
+                Última verificação: <span id="last-check">—</span>
+              </div>
+            </div>
+            <div class="col-md-6">
+              <div id="update-info" style="display: none;">
+                <div class="alert alert-info mb-2">
+                  <i class="fas fa-arrow-up me-1"></i>
+                  <strong id="commits-ahead">0</strong> atualizações disponíveis
+                </div>
+                <div class="small text-muted">
+                  <i class="fas fa-code-branch me-1"></i>
+                  Branch: <span id="current-branch">{{ system_info.git_info.branch }}</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Informações do Sistema -->
+  <div class="row g-4 mb-4">
+    <div class="col-12">
+      <div class="card update-card shadow-sm">
+        <div class="card-header bg-light border-0">
+          <h5 class="card-title mb-0">
+            <i class="fas fa-server me-2 text-primary"></i>Informações do Sistema
+          </h5>
+        </div>
+        <div class="card-body">
+          <div class="system-info-grid">
+            <!-- Informações do Git -->
+            <div class="p-3 bg-light rounded">
+              <h6 class="fw-bold mb-2">
+                <i class="fas fa-code-branch me-1"></i>Controle de Versão
+              </h6>
+              <div class="small">
+                <div class="mb-1">
+                  <strong>Commit:</strong> 
+                  <span class="info-badge">{{ system_info.git_info.commit_hash }}</span>
+                </div>
+                <div class="mb-1">
+                  <strong>Data:</strong> {{ system_info.git_info.commit_date }}
+                </div>
+                <div class="mb-1">
+                  <strong>Branch:</strong> {{ system_info.git_info.branch }}
+                </div>
+                <div class="mb-0">
+                  <strong>Status:</strong> 
+                  {% if system_info.git_info.is_git_repo %}
+                    <span class="text-success">Repositório Git</span>
+                  {% else %}
+                    <span class="text-warning">Não é repositório Git</span>
+                  {% endif %}
+                </div>
+              </div>
+            </div>
+
+            <!-- Informações da Plataforma -->
+            <div class="p-3 bg-light rounded">
+              <h6 class="fw-bold mb-2">
+                <i class="fas fa-desktop me-1"></i>Plataforma
+              </h6>
+              <div class="small">
+                <div class="mb-1">
+                  <strong>Sistema:</strong> {{ system_info.system_info.platform.system }}
+                </div>
+                <div class="mb-1">
+                  <strong>Versão:</strong> {{ system_info.system_info.platform.release }}
+                </div>
+                <div class="mb-1">
+                  <strong>Arquitetura:</strong> {{ system_info.system_info.platform.machine }}
+                </div>
+                <div class="mb-0">
+                  <strong>Python:</strong> {{ system_info.system_info.python_version }}
+                </div>
+              </div>
+            </div>
+
+            <!-- Informações de Atividade -->
+            <div class="p-3 bg-light rounded">
+              <h6 class="fw-bold mb-2">
+                <i class="fas fa-clock me-1"></i>Atividade
+              </h6>
+              <div class="small">
+                <div class="mb-1">
+                  <strong>Boot:</strong> {{ system_info.system_info.uptime }}
+                </div>
+                <div class="mb-1">
+                  <strong>Última verificação:</strong> 
+                  <span id="last-check-time">{{ system_info.update_info.last_check }}</span>
+                </div>
+                <div class="mb-0">
+                  <strong>Status:</strong> 
+                  <span id="update-status">Verificando...</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Log de Atualização -->
+  <div class="row g-4">
+    <div class="col-12">
+      <div class="card update-card shadow-sm">
+        <div class="card-header bg-light border-0">
+          <h5 class="card-title mb-0">
+            <i class="fas fa-terminal me-2 text-primary"></i>Log de Atualização
+          </h5>
+        </div>
+        <div class="card-body">
+          <div class="log-container" id="update-log">
+            Sistema de atualizações inicializado...
+            Versão atual: {{ system_info.version }}
+            {% if system_info.git_info.is_git_repo %}
+            Repositório Git detectado
+            {% else %}
+            Aviso: Não é um repositório Git
+            {% endif %}
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+let updateInProgress = false;
+
+// Verificar atualizações ao carregar a página
+document.addEventListener('DOMContentLoaded', function() {
+  checkUpdates();
+});
+
+function checkUpdates() {
+  const statusIndicator = document.getElementById('status-indicator');
+  const statusText = document.getElementById('status-text');
+  const updateBtn = document.getElementById('update-btn');
+  const updateInfo = document.getElementById('update-info');
+  const lastCheck = document.getElementById('last-check');
+  const lastCheckTime = document.getElementById('last-check-time');
+  const updateStatus = document.getElementById('update-status');
+  
+  // Mostrar loading
+  statusIndicator.className = 'status-indicator status-up-to-date';
+  statusText.textContent = 'Verificando atualizações...';
+  updateStatus.textContent = 'Verificando...';
+  
+  fetch('/api/check_updates')
+    .then(response => response.json())
+    .then(data => {
+      const now = new Date().toLocaleString('pt-BR');
+      lastCheck.textContent = now;
+      lastCheckTime.textContent = now;
+      
+      if (data.error) {
+        statusIndicator.className = 'status-indicator status-error';
+        statusText.textContent = 'Erro ao verificar atualizações';
+        updateStatus.textContent = 'Erro';
+        logMessage(`Erro: ${data.error}`);
+      } else if (data.has_updates) {
+        statusIndicator.className = 'status-indicator status-updates-available';
+        statusText.textContent = 'Atualizações disponíveis!';
+        updateStatus.textContent = 'Atualizações disponíveis';
+        
+        document.getElementById('commits-ahead').textContent = data.commits_ahead;
+        updateInfo.style.display = 'block';
+        updateBtn.style.display = 'inline-flex';
+        
+        logMessage(`✓ ${data.commits_ahead} atualizações disponíveis`);
+      } else {
+        statusIndicator.className = 'status-indicator status-up-to-date';
+        statusText.textContent = 'Sistema atualizado';
+        updateStatus.textContent = 'Atualizado';
+        updateInfo.style.display = 'none';
+        updateBtn.style.display = 'none';
+        
+        logMessage('✓ Sistema está atualizado');
+      }
+    })
+    .catch(error => {
+      statusIndicator.className = 'status-indicator status-error';
+      statusText.textContent = 'Erro de conexão';
+      updateStatus.textContent = 'Erro';
+      logMessage(`Erro de conexão: ${error.message}`);
+    });
+}
+
+function updateSystem() {
+  if (updateInProgress) return;
+  
+  updateInProgress = true;
+  const updateBtn = document.getElementById('update-btn');
+  const originalText = updateBtn.innerHTML;
+  
+  updateBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-1"></i>Atualizando...';
+  updateBtn.disabled = true;
+  
+  logMessage('🔄 Iniciando atualização do sistema...');
+  
+  fetch('/api/update_system', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json'
+    }
+  })
+  .then(response => response.json())
+  .then(data => {
+    if (data.success) {
+      logMessage('✅ ' + data.message);
+      logMessage(data.output);
+      
+      // Mostrar alerta de sucesso
+      if (window.SistemaUtils && window.SistemaUtils.toastManager) {
+        SistemaUtils.toastManager.success('Sistema atualizado com sucesso! A página será recarregada.');
+      } else {
+        alert('Sistema atualizado com sucesso! A página será recarregada.');
+      }
+      
+      // Recarregar página após 3 segundos
+      setTimeout(() => {
+        window.location.reload();
+      }, 3000);
+    } else {
+      logMessage('❌ ' + data.message);
+      if (data.error) {
+        logMessage('Erro: ' + data.error);
+      }
+      
+      if (window.SistemaUtils && window.SistemaUtils.toastManager) {
+        SistemaUtils.toastManager.error('Erro ao atualizar sistema: ' + data.message);
+      } else {
+        alert('Erro ao atualizar sistema: ' + data.message);
+      }
+    }
+  })
+  .catch(error => {
+    logMessage('❌ Erro de conexão: ' + error.message);
+    
+    if (window.SistemaUtils && window.SistemaUtils.toastManager) {
+      SistemaUtils.toastManager.error('Erro de conexão durante atualização');
+    } else {
+      alert('Erro de conexão durante atualização');
+    }
+  })
+  .finally(() => {
+    updateInProgress = false;
+    updateBtn.innerHTML = originalText;
+    updateBtn.disabled = false;
+  });
+}
+
+function logMessage(message) {
+  const logContainer = document.getElementById('update-log');
+  const timestamp = new Date().toLocaleTimeString('pt-BR');
+  const logEntry = `[${timestamp}] ${message}\n`;
+  
+  logContainer.textContent += logEntry;
+  logContainer.scrollTop = logContainer.scrollHeight;
+}
+</script>
+{% endblock %} 

@@ -12,122 +12,31 @@
     font-family: Arial, sans-serif;
   }
 
-  main {
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
-    height: 100vh;
-    padding: 1rem;
-    gap: 2rem;
-  }
-
-  .step {
-    display: none;
-    flex-direction: column;
-    align-items: center;
-    gap: 2rem;
-    animation: fadeIn 0.5s ease-in-out;
-  }
-
-  .step.active {
-    display: flex;
-  }
-
-  .retira-btn {
-    font-size: 2rem;
-    padding: 1.3rem 2.5rem;
-    border-radius: 12px;
-    min-width: 260px;
-    transition: filter 0.3s ease;
-  }
-
-  .retira-btn:hover {
-    filter: brightness(1.1);
-  }
-
-  .popup {
-    display: none;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    height: 70vh;
-    font-size: 2rem;
-    color: #198754;
-    animation: fadeIn 0.5s ease-in-out;
-  }
-
-  .senha-grande {
-    font-size: 5.5rem;
-    margin-top: 1rem;
-    font-weight: bold;
-  }
-
-  .progress-bar {
-    width: 80%;
-    height: 10px;
-    background-color: #ccc;
-    margin-top: 2rem;
-    border-radius: 5px;
-    overflow: hidden;
-  }
-
-  .progress-bar-fill {
-    width: 0%;
-    height: 100%;
-    background-color: #198754;
-    animation: fillBar 5s linear forwards;
-  }
-
-  .back-btn {
-    border: none;
-    background: none;
-    font-size: 1.5rem;
-    cursor: pointer;
-    color: gray;
-    position: absolute;
-    top: 1rem;
-    left: 1rem;
-    transition: color 0.3s;
-  }
-
-  .back-btn:hover {
-    color: black;
-  }
-
-  /* keyframes */
+  main { display: flex; flex-direction: column; justify-content: center; align-items: center; height: 100vh; padding: 1rem; gap: 2rem; }
+  .step { display: none; flex-direction: column; align-items: center; gap: 2rem; animation: fadeIn 0.5s ease-in-out; }
+  .step.active { display: flex; }
+  .retira-btn { font-size: 2rem; padding: 1.3rem 2.5rem; border-radius: 12px; min-width: 260px; transition: filter 0.3s ease; }
+  .retira-btn:hover { filter: brightness(1.1); }
+  .popup { display: none; flex-direction: column; align-items: center; justify-content: center; height: 70vh; font-size: 2rem; color: #198754; animation: fadeIn 0.5s ease-in-out; }
+  .senha-grande { font-size: 5.5rem; margin-top: 1rem; font-weight: bold; }
+  .progress-bar { width: 80%; height: 10px; background-color: #ccc; margin-top: 2rem; border-radius: 5px; overflow: hidden; }
+  .progress-bar-fill { width: 0%; height: 100%; background-color: #198754; animation: fillBar 5s linear forwards; }
+  .back-btn { border: none; background: none; font-size: 1.5rem; cursor: pointer; color: gray; position: absolute; top: 1rem; left: 1rem; transition: color 0.3s; }
+  .back-btn:hover { color: black; }
+  #fullscreen-init { position: fixed; inset: 0; background: black; color: white; display: flex; align-items: center; justify-content: center; flex-direction: column; z-index: 3000; }
+  #fullscreen-init button { font-size: 2rem; padding: 1.2rem 2.5rem; }
   @keyframes fillBar { from { width: 0%; } to { width: 100%; } }
   @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
-
-  /* overlay de reconexão */
-  #connection-overlay {
-    position: fixed;
-    top: 0; left: 0;
-    width: 100vw; height: 100vh;
-    background: rgba(0,0,0,0.6);
-    display: none;
-    align-items: center;
-    justify-content: center;
-    flex-direction: column;
-    z-index: 2000;
-    color: white;
-    font-size: 1.5rem;
-  }
-  .connection-bar {
-    width: 60%; height: 10px;
-    background: #444;
-    border-radius: 5px;
-    overflow: hidden;
-    margin-top: 1rem;
-  }
-  .connection-bar-fill {
-    width: 0%; height: 100%; background: #0f0;
-    animation: loopBar 2s linear infinite;
-  }
-  @keyframes loopBar {
-    0% { width: 0%; } 50% { width: 100%; } 100% { width: 0%; }
-  }
+  #connection-overlay { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0,0,0,0.6); display: none; align-items: center; justify-content: center; flex-direction: column; z-index: 2000; color: white; font-size: 1.5rem; }
+  .connection-bar { width: 60%; height: 10px; background: #444; border-radius: 5px; overflow: hidden; margin-top: 1rem; }
+  .connection-bar-fill { width: 0%; height: 100%; background: #0f0; animation: loopBar 2s linear infinite; }
+  @keyframes loopBar { 0% { width: 0%; } 50% { width: 100%; } 100% { width: 0%; } }
 </style>
+
+<div id="fullscreen-init">
+  <button onclick="iniciarFullscreen()" class="btn btn-success">Iniciar Retirada de Senha</button>
+  <p style="margin-top: 1rem;">Toque para continuar em tela cheia</p>
+</div>
 
 <main>
   <div id="step1" class="step active">
@@ -157,7 +66,25 @@
 
 <script>
   let tipoSelecionado = null;
-  let pingInterval    = null;
+  let pingInterval = null;
+
+  function iniciarFullscreen() {
+    const el = document.documentElement;
+    if (el.requestFullscreen) el.requestFullscreen();
+    else if (el.webkitRequestFullscreen) el.webkitRequestFullscreen();
+    else if (el.msRequestFullscreen) el.msRequestFullscreen();
+
+    // 🪄 Solicita orientação horizontal (landscape)
+    if (screen.orientation && screen.orientation.lock) {
+      screen.orientation.lock('landscape').then(() => {
+        console.log("✅ Tela bloqueada em paisagem.");
+      }).catch(err => {
+        console.warn("❌ Não foi possível bloquear orientação:", err);
+      });
+    }
+
+    document.getElementById('fullscreen-init').style.display = 'none';
+  }
 
   function selecionarTipo(tipo) {
     tipoSelecionado = tipo;
@@ -178,8 +105,11 @@
         clearInterval(pingInterval);
         document.getElementById('connection-overlay').style.display = 'none';
         document.getElementById('step2').classList.add('active');
+        console.log("✅ Reconectado com sucesso.");
       }
-    } catch {}
+    } catch {
+      console.warn("❌ Tentativa de reconexão falhou.");
+    }
   }
 
   async function selecionarPrimeiraVez(primeiraVez) {
@@ -187,12 +117,15 @@
       const resp = await fetch(`/api/gerar_senha?tipo=${tipoSelecionado}&primeira=${primeiraVez}`);
       if (!resp.ok) throw new Error();
       const dados = await resp.json();
+
       document.getElementById('step2').classList.remove('active');
       document.getElementById('popup').classList.add('active');
       document.getElementById('senha-numero').textContent =
         'Senha ' + dados.sigla + String(dados.numero).padStart(4, '0');
+
       const bar = document.querySelector('.progress-bar-fill');
       bar.style.animation = 'none'; void bar.offsetWidth; bar.style.animation = null;
+
       setTimeout(() => {
         document.getElementById('popup').classList.remove('active');
         document.getElementById('step1').classList.add('active');
@@ -202,7 +135,24 @@
       document.getElementById('step2').classList.remove('active');
       document.getElementById('connection-overlay').style.display = 'flex';
       pingInterval = setInterval(testarConexao, 2000);
+      console.warn("⚠️ Erro ao gerar senha. Iniciando tentativa de reconexão...");
     }
   }
+
+  // Ping inicial para manter sessão
+  (() => {
+    fetch('/ping')
+      .then(r => {
+        if (!r.ok) console.warn("⚠️ Ping falhou.");
+      })
+      .catch(() => console.warn("❌ Ping não pôde ser enviado."));
+  })();
+
+  window.addEventListener('offline', () => console.warn("📴 Dispositivo offline."));
+  window.addEventListener('online', () => console.log("📶 Dispositivo online."));
+</script>
+
+<script>
+  console.log("🧭 Endpoint atual:", "{{ g.endpoint }}");
 </script>
 {% endblock %}
