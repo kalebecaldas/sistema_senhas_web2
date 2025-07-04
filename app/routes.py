@@ -544,6 +544,11 @@ def api_tts():
     except Exception as e:
         return jsonify({'erro': str(e)}), 500
 
+
+@bp.route('/teste-tts')
+def teste_tts():
+    return render_template('teste_tts.html')
+
 @bp.route('/prisetup')
 @login_required
 @role_required('admin')

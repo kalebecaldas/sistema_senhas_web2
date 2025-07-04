@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Teste TTS</title>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; }
+        button { padding: 10px 20px; margin: 10px; font-size: 16px; }
+        .log { background: #f5f5f5; padding: 10px; margin: 10px 0; border-radius: 5px; }
+    </style>
+</head>
+<body>
+    <h1>Teste de TTS</h1>
+    
+    <button onclick="testarTTS()">Testar TTS</button>
+    <button onclick="limparLog()">Limpar Log</button>
+    
+    <div id="log" class="log"></div>
+    
+    <script>
+        function log(mensagem) {
+            const logDiv = document.getElementById('log');
+            const timestamp = new Date().toLocaleTimeString();
+            logDiv.innerHTML += `[${timestamp}] ${mensagem}<br>`;
+            console.log(mensagem);
+        }
+        
+        function limparLog() {
+            document.getElementById('log').innerHTML = '';
+        }
+        
+        function testarTTS() {
+            log('Iniciando teste de TTS...');
+            
+            const texto = 'Teste de voz do sistema de senhas';
+            const voz = 'pt-BR-FranciscaNeural';
+            const url = `/tts_audio?texto=${encodeURIComponent(texto)}&voz=${encodeURIComponent(voz)}`;
+            
+            log(`Fazendo requisição para: ${url}`);
+            
+            fetch(url)
+                .then(response => {
+                    log(`Resposta recebida: ${response.status} ${response.statusText}`);
+                    if (response.ok) {
+                        return response.blob();
+                    }
+                    throw new Error(`Erro HTTP: ${response.status} - ${response.statusText}`);
+                })
+                .then(blob => {
+                    log(`Áudio recebido, tamanho: ${blob.size} bytes`);
+                    const audio = new Audio(URL.createObjectURL(blob));
+                    
+                    audio.addEventListener('loadstart', () => log('Áudio começando a carregar'));
+                    audio.addEventListener('canplay', () => log('Áudio pronto para reproduzir'));
+                    audio.addEventListener('play', () => log('Áudio iniciado'));
+                    audio.addEventListener('ended', () => log('Áudio finalizado'));
+                    audio.addEventListener('error', (e) => log(`Erro no áudio: ${e}`));
+                    
+                    log('Tentando reproduzir áudio...');
+                    return audio.play();
+                })
+                .then(() => {
+                    log('Áudio reproduzido com sucesso!');
+                })
+                .catch(error => {
+                    log(`Erro: ${error.message}`);
+                });
+        }
+    </script>
+</body>
+</html> 

@@ -486,26 +486,43 @@ document.addEventListener('DOMContentLoaded', function() {
     const vozSelecionada = document.getElementById('voz_azure').value;
     const textoTeste = 'Teste de voz do sistema de senhas';
     
+    console.log('Iniciando teste de voz:', { voz: vozSelecionada, texto: textoTeste });
+    
     // Show loading state
     const originalText = this.innerHTML;
     this.innerHTML = '<i class="fas fa-spinner fa-spin me-1"></i>Testando...';
     this.disabled = true;
     
     // Make TTS request
-    fetch(`/tts_audio?texto=${encodeURIComponent(textoTeste)}&voz=${vozSelecionada}`)
+    const url = `/tts_audio?texto=${encodeURIComponent(textoTeste)}&voz=${encodeURIComponent(vozSelecionada)}`;
+    console.log('Fazendo requisição para:', url);
+    
+    fetch(url)
       .then(response => {
+        console.log('Resposta recebida:', response.status, response.statusText);
         if (response.ok) {
           return response.blob();
         }
-        throw new Error('Erro ao testar voz');
+        throw new Error(`Erro HTTP: ${response.status} - ${response.statusText}`);
       })
       .then(blob => {
+        console.log('Áudio recebido, tamanho:', blob.size, 'bytes');
         const audio = new Audio(URL.createObjectURL(blob));
-        audio.play();
+        
+        audio.addEventListener('loadstart', () => console.log('Áudio começando a carregar'));
+        audio.addEventListener('canplay', () => console.log('Áudio pronto para reproduzir'));
+        audio.addEventListener('play', () => console.log('Áudio iniciado'));
+        audio.addEventListener('ended', () => console.log('Áudio finalizado'));
+        audio.addEventListener('error', (e) => console.error('Erro no áudio:', e));
+        
+        audio.play().catch(error => {
+          console.error('Erro ao reproduzir áudio:', error);
+          alert('Erro ao reproduzir áudio. Verifique se o som está habilitado.');
+        });
       })
       .catch(error => {
-        console.error('Erro:', error);
-        alert('Erro ao testar voz. Verifique a conexão.');
+        console.error('Erro no teste de voz:', error);
+        alert(`Erro ao testar voz: ${error.message}`);
       })
       .finally(() => {
         this.innerHTML = originalText;
