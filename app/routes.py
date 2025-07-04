@@ -74,7 +74,7 @@ def controlar_sessao_por_inatividade():
                 if delta > timedelta(hours=8):  # ⏳ inatividade de 8h
                     logout_user()
                     session.clear()
-                    flash("Sessão encerrada por inatividade.")
+                    flash("Sessão encerrada por inatividade.", "warning")
                     return redirect(url_for('main.login'))
             except ValueError:
                 session['ultimo_uso'] = agora.isoformat()
@@ -105,7 +105,7 @@ def login():
             login_user(user)
             session.pop('guiche', None)
             return redirect(url_for('main.painel'))
-        flash('Login ou senha inválidos')
+        flash('Login ou senha inválidos', 'error')
     config = ConfiguracaoSistema.query.first()
     return render_template('login.html', config=config)
 
@@ -349,7 +349,7 @@ def editar_usuario(id):
             usuario.senha = generate_password_hash(nova_senha)
 
         db.session.commit()
-        flash('Usuário atualizado com sucesso.')
+        flash('Usuário atualizado com sucesso.', 'success')
         return redirect(url_for('main.listar_usuarios'))
 
     config = ConfiguracaoSistema.query.first()
@@ -366,7 +366,7 @@ def cadastro():
         tipo = request.form['tipo']
 
         if Usuario.query.filter_by(email=email).first():
-            flash('Este e-mail já está cadastrado.')
+            flash('Este e-mail já está cadastrado.', 'error')
             return redirect(url_for('main.cadastro'))
 
         novo = Usuario(
@@ -377,7 +377,7 @@ def cadastro():
         )
         db.session.add(novo)
         db.session.commit()
-        flash('Usuário cadastrado com sucesso!')
+        flash('Usuário cadastrado com sucesso!', 'success')
         return redirect(url_for('main.painel'))
 
     config = ConfiguracaoSistema.query.first()
@@ -705,6 +705,7 @@ def ping():
 
 @bp.route('/atualizacoes')
 @login_required
+@role_required('admin')  # Apenas administradores podem acessar
 def atualizacoes():
     """Página de atualizações do sistema"""
     from app.version import version_manager
@@ -717,6 +718,7 @@ def atualizacoes():
 
 @bp.route('/api/check_updates')
 @login_required
+@role_required('admin')  # Apenas administradores podem verificar
 def api_check_updates():
     """API para verificar atualizações"""
     from app.version import version_manager
@@ -726,11 +728,22 @@ def api_check_updates():
 
 @bp.route('/api/update_system', methods=['POST'])
 @login_required
+@role_required('admin')  # Apenas administradores podem atualizar
 def api_update_system():
     """API para atualizar o sistema"""
     from app.version import version_manager
     
+    # Log da tentativa de atualização
+    print(f"🔄 Tentativa de atualização por: {current_user.email} ({current_user.tipo})")
+    
     result = version_manager.update_system()
+    
+    # Log do resultado
+    if result.get('success'):
+        print(f"✅ Atualização bem-sucedida por: {current_user.email}")
+    else:
+        print(f"❌ Falha na atualização por: {current_user.email} - {result.get('error', 'Erro desconhecido')}")
+    
     return jsonify(result)
 
 # ============================================================================

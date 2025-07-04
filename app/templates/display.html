@@ -102,9 +102,9 @@
 
     /* Coluna de senhas */
     .senha-coluna {
-      flex: 1 1 420px;
-      max-width: 600px;
-      min-width: 340px;
+      flex: 1 1 480px;
+      max-width: 650px;
+      min-width: 400px;
       display: flex;
       flex-direction: column;
       align-items: center;
@@ -175,7 +175,8 @@
       font-weight: 600;
       padding: 1.2rem 1.5rem;
       width: 98%;
-      max-width: 540px;
+      max-width: 580px;
+      min-width: 400px;
       margin-left: auto;
       margin-right: auto;
       text-align: left;
@@ -194,6 +195,7 @@
       align-items: center;
       justify-content: space-between;
       gap: 1.5rem;
+      overflow: visible;
     }
 
     .senha-item:hover {
@@ -225,8 +227,10 @@
       letter-spacing: 1px;
       flex: 1 1 auto;
       white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
+      overflow: visible;
+      text-overflow: clip;
+      min-width: 0;
+      word-break: keep-all;
     }
     .senha-item .guiche-label {
       font-size: 1.5rem;
@@ -464,10 +468,17 @@
       
       .senha-item {
         font-size: 2.4rem;
+        max-width: 520px;
+        min-width: 350px;
       }
       
       .senha-item.ultima {
         font-size: 3rem;
+      }
+      
+      .senha-coluna {
+        max-width: 580px;
+        min-width: 380px;
       }
     }
 

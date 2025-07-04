@@ -225,6 +225,39 @@
                 </div>
               </div>
             </div>
+
+            <!-- Informações de Segurança -->
+            <div class="p-3 bg-light rounded">
+              <h6 class="fw-bold mb-2">
+                <i class="fas fa-shield-alt me-1"></i>Segurança
+              </h6>
+              <div class="small">
+                <div class="mb-1">
+                  <strong>Ambiente:</strong> 
+                  <span class="badge bg-{{ 'success' if system_info.system_info.environment == 'development' else 'warning' }}">
+                    {{ system_info.system_info.environment }}
+                  </span>
+                </div>
+                <div class="mb-1">
+                  <strong>Repositório:</strong> 
+                  <span class="badge bg-{{ 'success' if system_info.system_info.security.official_repo else 'danger' }}">
+                    {{ 'Oficial' if system_info.system_info.security.official_repo else 'Não Oficial' }}
+                  </span>
+                </div>
+                <div class="mb-1">
+                  <strong>Permissões:</strong> 
+                  <span class="badge bg-{{ 'success' if system_info.system_info.security.write_permissions else 'danger' }}">
+                    {{ 'OK' if system_info.system_info.security.write_permissions else 'Negadas' }}
+                  </span>
+                </div>
+                <div class="mb-0">
+                  <strong>Atualização Segura:</strong> 
+                  <span class="badge bg-{{ 'success' if system_info.system_info.security.update_safe else 'warning' }}">
+                    {{ 'Sim' if system_info.system_info.security.update_safe else 'Não' }}
+                  </span>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
       </div>
