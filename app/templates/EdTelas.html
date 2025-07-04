@@ -491,11 +491,13 @@ function initializeEdTelasPage() {
     });
   });
   
-  // Test voice functionality - Remove event listener anterior se existir
-  testeVozBtn.removeEventListener('click', testeVozHandler);
-  testeVozBtn.addEventListener('click', testeVozHandler);
+  // Test voice functionality - Usar uma abordagem mais robusta
+  // Remover todos os event listeners anteriores
+  const newBtn = testeVozBtn.cloneNode(true);
+  testeVozBtn.parentNode.replaceChild(newBtn, testeVozBtn);
   
-  function testeVozHandler() {
+  // Adicionar o novo event listener
+  newBtn.addEventListener('click', function() {
     const vozSelecionada = document.getElementById('voz_azure').value;
     const textoTeste = 'Teste de voz do sistema de senhas';
     
@@ -541,7 +543,7 @@ function initializeEdTelasPage() {
         this.innerHTML = originalText;
         this.disabled = false;
       });
-  }
+  });
   
   // Form submission
   form.addEventListener('submit', function(event) {
