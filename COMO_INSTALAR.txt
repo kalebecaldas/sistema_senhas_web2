@@ -1,0 +1,44 @@
+========================================
+    SISTEMA DE SENHAS IAAM - INSTALAÇÃO
+========================================
+
+📋 PRÉ-REQUISITOS:
+- Windows 10 ou superior
+- Conexão com a internet (para baixar dependências)
+- Acesso de administrador (recomendado)
+
+🚀 COMO INSTALAR:
+
+1. Extraia todos os arquivos do ZIP em uma pasta
+2. Certifique-se de que o arquivo "python-3.13.3-amd64.exe" está na pasta
+3. Execute "instalar_dependencias.bat" com duplo clique
+4. Aguarde a instalação automática
+5. Quando perguntado, escolha se quer iniciar o sistema
+
+✅ O QUE O INSTALADOR FAZ:
+- Verifica se Python está instalado
+- Instala Python 3.13.3 se necessário
+- Cria ambiente virtual
+- Instala todas as dependências
+- Configura banco de dados
+- Cria script de inicialização
+
+🌐 COMO USAR O SISTEMA:
+1. Execute "Iniciar Sistema.bat"
+2. Acesse: http://localhost:5003
+3. Usuário: admin
+4. Senha: admin123
+
+🛠️ SE DER ERRO:
+- Execute como administrador
+- Verifique se tem internet
+- Reinicie o computador se necessário
+- Verifique se o arquivo python-3.13.3-amd64.exe está na pasta
+
+📞 SUPORTE:
+Se tiver problemas, verifique:
+- Conexão com internet
+- Permissões de administrador
+- Antivírus (pode bloquear instalação)
+
+======================================== 

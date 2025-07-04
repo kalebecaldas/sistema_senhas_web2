@@ -1,0 +1,17 @@
+# Ver status
+git status
+
+# Ver histórico
+git log --oneline
+
+# Ver diferenças
+git diff
+
+# Criar nova branch
+git checkout -b nova-funcionalidade
+
+# Voltar para branch principal
+git checkout main
+
+# Mesclar branch
+git merge nova-funcionalidade
