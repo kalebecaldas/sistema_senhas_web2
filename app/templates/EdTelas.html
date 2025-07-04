@@ -431,11 +431,21 @@
 </style>
 
 <script>
-document.addEventListener('DOMContentLoaded', function() {
+// Função para inicializar o JavaScript da página
+function initializeEdTelasPage() {
   const form = document.getElementById('config-form');
   const colorInputs = document.querySelectorAll('input[type="color"]');
   const previewContainer = document.getElementById('preview-container');
   const testeVozBtn = document.getElementById('teste-voz');
+  
+  // Verificar se os elementos existem
+  if (!form || !previewContainer || !testeVozBtn) {
+    console.log('Elementos não encontrados, aguardando...');
+    setTimeout(initializeEdTelasPage, 100);
+    return;
+  }
+  
+  console.log('Inicializando página EdTelas...');
   
   // Update preview when colors change
   function updatePreview() {
@@ -481,8 +491,11 @@ document.addEventListener('DOMContentLoaded', function() {
     });
   });
   
-  // Test voice functionality
-  testeVozBtn.addEventListener('click', function() {
+  // Test voice functionality - Remove event listener anterior se existir
+  testeVozBtn.removeEventListener('click', testeVozHandler);
+  testeVozBtn.addEventListener('click', testeVozHandler);
+  
+  function testeVozHandler() {
     const vozSelecionada = document.getElementById('voz_azure').value;
     const textoTeste = 'Teste de voz do sistema de senhas';
     
@@ -528,7 +541,7 @@ document.addEventListener('DOMContentLoaded', function() {
         this.innerHTML = originalText;
         this.disabled = false;
       });
-  });
+  }
   
   // Form submission
   form.addEventListener('submit', function(event) {
@@ -575,6 +588,33 @@ document.addEventListener('DOMContentLoaded', function() {
   }
   
   loadFileInfo();
+  
+  console.log('Página EdTelas inicializada com sucesso!');
+}
+
+// Executar quando o DOM estiver pronto
+document.addEventListener('DOMContentLoaded', initializeEdTelasPage);
+
+// Executar também quando a página for carregada via navegação (SPA)
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', initializeEdTelasPage);
+} else {
+  // Se o DOM já estiver pronto, executar imediatamente
+  initializeEdTelasPage();
+}
+
+// Executar quando a página for focada (voltar de outra aba)
+window.addEventListener('focus', function() {
+  console.log('Página focada, verificando inicialização...');
+  setTimeout(initializeEdTelasPage, 100);
+});
+
+// Executar quando a página for visível novamente
+document.addEventListener('visibilitychange', function() {
+  if (!document.hidden) {
+    console.log('Página visível novamente, verificando inicialização...');
+    setTimeout(initializeEdTelasPage, 100);
+  }
 });
 </script>
 {% endblock %}
