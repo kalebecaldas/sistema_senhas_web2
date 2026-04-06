@@ -1,0 +1,14 @@
+IMPORTANT: Como rodar no Windows
+
+Passo 1: Instale o Python
+- Baixe o Python em python.org
+- Durante a instalação, É OBRIGATÓRIO marcar: "Add Python to PATH"
+
+Passo 2: Iniciar o Sistema
+- Dê dois cliques no arquivo "instalador_windows.bat"
+- Aguarde a instalação automática
+- O sistema abrirá no seu navegador
+
+Solução de Problemas:
+- Se fechar sozinho: Clique com botão direito no .bat > Editar > Adicione "pause" na última linha para ver o erro.
+- Erro de permissão: Execute como Administrador.

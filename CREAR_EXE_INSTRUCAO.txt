@@ -1,0 +1,97 @@
+COMO CRIAR O EXECUTÁVEL PARA WINDOWS
+=====================================
+
+Você está no macOS, mas quer criar um .exe para Windows. 
+Aqui estão as opções:
+
+OPÇÃO 1: Criar .exe simples (RECOMENDADA)
+=======================================
+1. Execute no seu Mac:
+   python3 criar_exe_updater.py
+
+2. Isso irá:
+   ✓ Instalar PyInstaller automaticamente
+   ✓ Criar o arquivo AtualizadorIAAM.exe
+   ✓ Salvar em dist/AtualizadorIAAM.exe
+
+3. Copie o arquivo AtualizadorIAAM.exe para o Windows
+
+OPÇÃO 2: Usar apenas o arquivo .bat (MAIS SIMPLES)
+=================================================
+O arquivo atualizar_sistema.bat já está pronto e funciona no Windows!
+
+Basta copiar atualizar_sistema.bat para o computador Windows e executar.
+
+OPÇÃO 3: Entrega Manual dos Arquivos
+===================================
+Se você preferir entregar os arquivos modificados manualmente:
+
+ARQUIVOS QUE FORAM MODIFICADOS:
+✓ app/services.py - Lógicas de prioridade corrigidas
+✓ app/version.py - Sistema de atualização melhorado  
+✓ app/templates/atualizacoes.html - Interface melhorada
+✓ app/templates/base.html - Footer invisível adicionado
+✓ app/static/style.css - Estilos melhorados
+
+INSTRUÇÃO PARA O COMPUTADOR WINDOWS:
+====================================
+1. Faça backup da pasta atual do sistema
+2. Substitua apenas os arquivos modificados acima
+3. Reinicie o sistema
+
+SCRIPT DE ATUALIZAÇÃO .bat (ENTREGUÍVEL AGORA):
+==============================================
+O arquivo atualizar_sistema.bat pode ser usado imediatamente no Windows!
+
+COPIANDO ARQUIVOS VIA GIT (MAIS AUTOMÁTICO):
+===========================================
+1. No computador Windows, coloque o atualizar_sistema.bat na pasta do projeto
+2. Execute como administrador
+3. O script fará tudo automaticamente:
+   ✓ Backup automático
+   ✓ Pul de atualizações
+   ✓ Atualização de dependências
+   ✓ Log completo
+
+TESTANDO O SISTEMA AGORA:
+=========================
+Para testar se tudo funciona antes de entregar:
+
+1. Execute: python3 criar_exe_updater.py
+2. Teste o criado: python3 atualizador_autonomo.py --auto
+3. Verifique se detecta a atualização disponível (1 commit pendente)
+
+COMANDOS PARA TESTAR:
+====================
+# Testar atualização:
+python3 atualizador_autonomo.py 
+
+# Testar modo automático:
+python3 atualizador_autonomo.py --auto
+
+# Ver status atual:
+git status
+
+# Ver commits pendentes:
+git log HEAD..origin/main --oneline
+
+CHECKLIST PARA ENTREGA:
+=======================
+□ atualizar_sistema.bat (para Windows)
+□ Ou AtualizadorIAAM.exe (se criar via PyInstaller)
+□ Instruções de uso para o técnico
+□ Backup das configurações atuais do sistema Windows
+□ Teste do arquivo .bat/.exe antes de entregar
+
+SIMPLIFIED INSTRUCTIONS FOR WINDOWS TECHNICIAN:
+===============================================
+1. Copy atualizar_sistema.bat to the IAAM system folder
+2. Right-click and "Run as administrator"
+3. Follow the on-screen instructions (Y = Yes)
+4. The system will automatically:
+   - Create backup
+   - Download updates
+   - Update dependencies
+   - Log everything
+
+In case of problems, restore from backup_[date] folder.
