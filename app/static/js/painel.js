@@ -105,18 +105,30 @@ window.inicializarPainel = function() {
         tr.appendChild(tdStatus);
 
         const tdAcao = document.createElement('td');
+
+        // Botão único que funciona para chamar e rechamar
+        const btnAcao = document.createElement('button');
+        btnAcao.type = 'button';
+        btnAcao.className = 'btn btn-primary btn-sm d-flex align-items-center';
+        
+        // Define ícone e ação baseado no status da senha
         if (s.chamado) {
-          const btn = document.createElement('button');
-          btn.type        = 'button';
-          btn.className   = 'btn btn-secondary btn-sm';
-          btn.textContent = 'Rechamar';
-          btn.onclick     = () => executarAcao({
+          btnAcao.innerHTML = '<i class="fas fa-bullhorn"></i> <span>Rechamar</span>';
+          btnAcao.onclick = () => executarAcao({
             acao: 'rechamar',
             rechamar_id: s.id,
             guiche: guicheInput.value.trim()
           });
-          tdAcao.appendChild(btn);
+        } else {
+          btnAcao.innerHTML = '<i class="fas fa-play"></i> <span>Chamar</span>';
+          btnAcao.onclick = () => executarAcao({
+            acao: 'chamar_especifica',
+            senha_id: s.id,
+            guiche: guicheInput.value.trim()
+          });  
         }
+
+        tdAcao.appendChild(btnAcao);
         tr.appendChild(tdAcao);
 
         tbody.appendChild(tr);

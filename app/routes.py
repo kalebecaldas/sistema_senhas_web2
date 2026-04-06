@@ -1,4 +1,4 @@
-from flask import Blueprint, render_template, redirect, url_for, request, flash, jsonify, session
+from flask import Blueprint, render_template, redirect, url_for, request, flash, jsonify, session, current_app
 from flask_login import login_user, logout_user, login_required, current_user
 from werkzeug.security import generate_password_hash, check_password_hash
 import os
@@ -16,8 +16,23 @@ from io import BytesIO
 
 bp = Blueprint("main", __name__)
 
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from flask import g
+from zoneinfo import ZoneInfo
+
+# Timezone do Brasil - Manaus (UTC-4)
+TZ_BRASIL = ZoneInfo('America/Manaus')
+TZ_UTC = ZoneInfo('UTC')
+
+def utc_to_brasil(utc_dt):
+    """Converte datetime UTC para horário local (Manaus)"""
+    if utc_dt is None:
+        return None
+    # Se não tem timezone, assumir UTC
+    if utc_dt.tzinfo is None:
+        utc_dt = utc_dt.replace(tzinfo=TZ_UTC)
+    # Converter para horário local
+    return utc_dt.astimezone(TZ_BRASIL)
 
 @bp.before_request
 def controlar_sessao_por_inatividade():
@@ -37,7 +52,8 @@ def controlar_sessao_por_inatividade():
     }
     
     if request.endpoint in rotas_importantes:
-        print(f"📌 Rota acessada: {request.endpoint}")
+        # Evitar emojis no log para nao gerar erro de encoding no Windows
+        print(f"Rota acessada: {request.endpoint}")
     
     g.endpoint = request.endpoint
 
@@ -143,7 +159,8 @@ def api_retira_senha():
         db.session.flush()
 
         # Imprimir usando serviço
-        impressora = ImpressoraService()
+        config = ConfiguracaoSistema.query.first()
+        impressora = ImpressoraService(config)
         if not impressora.imprimir_senha(senha_completa, 'secundaria'):
             raise Exception("Falha na impressão")
 
@@ -186,7 +203,8 @@ def gerar_senha_triada():
         senha_completa = f"{sigla}{str(numero).zfill(4)}"
 
         # Imprimir usando serviço
-        impressora = ImpressoraService()
+        config = ConfiguracaoSistema.query.first()
+        impressora = ImpressoraService(config)
         if not impressora.imprimir_senha(senha_completa, 'principal'):
             raise Exception("Falha na impressão")
 
@@ -221,16 +239,23 @@ def display():
 
 @bp.route('/fila_json')
 def fila_json():
-    senhas = Senha.query.filter_by(chamado=True).order_by(Senha.id.desc()).all()
-    dados = [{
-        'id': s.id,
-        'sigla': s.sigla,
-        'numero': s.numero,
-        'chamado': s.chamado,
-        'chamado_em': s.chamado_em.isoformat() if s.chamado_em else None,
-        'senha_completa': s.sigla if s.numero == 0 else f"{s.sigla}{str(s.numero).zfill(4)}",
-        'guiche': s.guiche or ''
-    } for s in senhas]
+    senhas = Senha.query.filter_by(chamado=True).order_by(Senha.id.desc()).limit(15).all()
+    dados = []
+    for s in senhas:
+        chamado_em_brasil = None
+        if s.chamado_em:
+            dt_brasil = utc_to_brasil(s.chamado_em)
+            chamado_em_brasil = dt_brasil.strftime('%Y-%m-%dT%H:%M:%S')
+        
+        dados.append({
+            'id': s.id,
+            'sigla': s.sigla,
+            'numero': s.numero,
+            'chamado': s.chamado,
+            'chamado_em': chamado_em_brasil,
+            'senha_completa': s.sigla if s.numero == 0 else f"{s.sigla}{str(s.numero).zfill(4)}",
+            'guiche': s.guiche or ''
+        })
 
     versao = max([s.chamado_em or s.gerado_em for s in senhas], default=datetime.utcnow()).isoformat()
     return jsonify({'versao': versao, 'senhas': dados})
@@ -302,11 +327,21 @@ def chamar_senha():
     senha, novo_contador = prioridade_service.selecionar_proxima_senha(contador_normais)
     
     if senha:
+        import time
+        commit_start = time.time()
+        
         senha.chamado = True
         senha.chamado_por = current_user.id
-        senha.chamado_em = datetime.utcnow()
+        chamado_em_now = datetime.utcnow()
+        senha.chamado_em = chamado_em_now
         senha.guiche = guiche
         db.session.commit()
+        
+        commit_duration = (time.time() - commit_start) * 1000  # ms
+        senha_completa = senha.sigla if senha.numero == 0 else f"{senha.sigla}{str(senha.numero).zfill(4)}"
+        print(f"[TIMING] chamar_senha SALVO - Senha: {senha_completa}, ID: {senha.id}, chamado_em: {chamado_em_now.isoformat()}, commit: {commit_duration:.2f}ms")
+        if commit_duration > 50:
+            print(f"[PERF] chamar_senha commit demorou {commit_duration:.2f}ms - Senha: {senha_completa}")
         
         # Atualizar contador na sessão
         session['contador_normais'] = novo_contador
@@ -387,7 +422,8 @@ def cadastro():
 @login_required
 @role_required('admin')
 def edtelas():
-    print("➡️ Rota /edtelas carregada")
+    # Log simples, sem emojis, para compatibilidade com console do Windows
+    print("Rota /edtelas carregada")
     config = ConfiguracaoSistema.query.first()
     return render_template('EdTelas.html', config=config)
 
@@ -423,6 +459,7 @@ def salvar_config():
         config.frase_bemvindo = request.form.get('frase_bemvindo', config.frase_bemvindo)
         config.cor_hora = request.form.get('cor_hora', config.cor_hora)
         config.voz_azure = request.form.get('voz_azure', config.voz_azure)
+        config.som_chamada = request.form.get('som_chamada', getattr(config, 'som_chamada', 'sino_suave'))
 
         # 🧠 NOVO BLOCO: prioridade de senhas
         config.tipo_prioridade = request.form.get('tipo_prioridade', config.tipo_prioridade)
@@ -458,38 +495,124 @@ def salvar_config():
                     config.tolerancia_minutos = minutos
             except ValueError:
                 flash("Tolerância deve ser um número inteiro.")
+        
+        # 🖨️ CONFIGURAÇÕES DE IMPRESSORAS TÉRMICAS
+        config.impressora_principal_ip = request.form.get('impressora_principal_ip', config.impressora_principal_ip)
+        config.impressora_secundaria_ip = request.form.get('impressora_secundaria_ip', config.impressora_secundaria_ip)
+        
+        try:
+            porta_principal = request.form.get('impressora_principal_porta')
+            if porta_principal:
+                config.impressora_principal_porta = int(porta_principal)
+        except ValueError:
+            flash("Porta da impressora principal deve ser um número.", "warning")
+        
+        try:
+            porta_secundaria = request.form.get('impressora_secundaria_porta')
+            if porta_secundaria:
+                config.impressora_secundaria_porta = int(porta_secundaria)
+        except ValueError:
+            flash("Porta da impressora secundária deve ser um número.", "warning")
 
+    # Upload de logo
     if 'logo' in request.files:
         logo = request.files['logo']
         if logo.filename:
-            logo_filename = secure_filename(logo.filename)
-            logo.save(os.path.join('app/static/img', logo_filename))
-            config.logo_path = f"img/{logo_filename}"
+            try:
+                # Verificar extensão
+                ext = logo.filename.rsplit('.', 1)[1].lower() if '.' in logo.filename else ''
+                if ext not in ['png', 'jpg', 'jpeg', 'gif']:
+                    flash(f"Formato de logo inválido. Use: PNG, JPG, JPEG ou GIF", "error")
+                else:
+                    # Garantir que o diretório existe
+                    img_dir = os.path.join('app/static/img')
+                    os.makedirs(img_dir, exist_ok=True)
+                    
+                    logo_filename = secure_filename(logo.filename)
+                    logo_path = os.path.join(img_dir, logo_filename)
+                    logo.save(logo_path)
+                    config.logo_path = f"img/{logo_filename}"
+                    flash("Logo enviado com sucesso!", "success")
+            except Exception as e:
+                flash(f"Erro ao salvar logo: {str(e)}", "error")
+                print(f"Erro ao salvar logo: {e}")
 
+    # Upload de vídeo com validação robusta
     if 'video' in request.files:
         video = request.files['video']
         if video.filename:
-            video_filename = secure_filename(video.filename)
-            video.save(os.path.join('app/static/videos', video_filename))
-            config.video_path = f"videos/{video_filename}"
+            try:
+                # Verificar extensão
+                ext = video.filename.rsplit('.', 1)[1].lower() if '.' in video.filename else ''
+                allowed_video_exts = ['mp4', 'avi', 'mov', 'webm', 'mkv']
+                
+                if ext not in allowed_video_exts:
+                    flash(f"Formato de vídeo inválido. Use: {', '.join(allowed_video_exts).upper()}", "error")
+                else:
+                    # Garantir que o diretório existe
+                    video_dir = os.path.join('app/static/videos')
+                    os.makedirs(video_dir, exist_ok=True)
+                    
+                    # Verificar tamanho do arquivo (já validado pelo Flask, mas vamos informar)
+                    video_filename = secure_filename(video.filename)
+                    video_path = os.path.join(video_dir, video_filename)
+                    
+                    # Salvar o arquivo
+                    video.save(video_path)
+                    
+                    # Verificar se o arquivo foi salvo corretamente
+                    if os.path.exists(video_path):
+                        file_size_mb = os.path.getsize(video_path) / (1024 * 1024)
+                        config.video_path = f"videos/{video_filename}"
+                        flash(f"Vídeo enviado com sucesso! ({file_size_mb:.2f} MB)", "success")
+                    else:
+                        flash("Erro ao salvar vídeo no servidor", "error")
+                        
+            except Exception as e:
+                flash(f"Erro ao salvar vídeo: {str(e)}", "error")
+                print(f"Erro detalhado ao salvar vídeo: {e}")
+                import traceback
+                traceback.print_exc()
 
-    db.session.commit()
-    flash("Configurações salvas com sucesso!")
+    try:
+        db.session.commit()
+        flash("Configurações salvas com sucesso!", "success")
+    except Exception as e:
+        db.session.rollback()
+        flash(f"Erro ao salvar configurações no banco de dados: {str(e)}", "error")
+        print(f"Erro ao salvar no banco: {e}")
+    
     return redirect(url_for('main.edtelas'))
 
 
 
 @bp.route('/ultima_chamada')
 def ultima_chamada():
+    import time
+    query_start = time.time()
+    
+    # Query otimizada: apenas campos necessários, ordenação por índice primário quando possível
     senha = Senha.query.filter_by(chamado=True).order_by(Senha.chamado_em.desc()).first()
+    
+    query_duration = (time.time() - query_start) * 1000  # ms
+    
     if senha:
         senha_completa = senha.sigla if senha.numero == 0 else f"{senha.sigla}{str(senha.numero).zfill(4)}"
-        return jsonify({
+        chamado_em_brasil = None
+        if senha.chamado_em:
+            # Converter UTC para horário do Brasil
+            dt_brasil = utc_to_brasil(senha.chamado_em)
+            chamado_em_brasil = dt_brasil.strftime('%Y-%m-%dT%H:%M:%S')
+        result = {
             'senha': senha_completa,
             'guiche': senha.guiche or '...',
-            'chamado_em': senha.chamado_em.isoformat() if senha.chamado_em else None,
+            'chamado_em': chamado_em_brasil,
             'id': senha.id
-        })
+        }
+        # Log apenas se demorar muito (reduzir spam de logs)
+        if query_duration > 100:
+            print(f"[PERF] ultima_chamada query demorou {query_duration:.2f}ms")
+        return jsonify(result)
     return jsonify({'senha': '', 'guiche': '...', 'chamado_em': None, 'id': None})
 
 # Rota /tts_audio movida para tts_routes.py
@@ -503,8 +626,12 @@ def api_falar():
     if not texto:
         return jsonify({'erro': 'Texto vazio'}), 400
 
-    AZURE_TTS_KEY = '1GrRULjTQvppqKpUK2GSKc6YRwmdNdlDW4YywGXMfL6LkpfPU004JQQJ99BDACZoyfiXJ3w3AAAYACOGsj0S'
-    AZURE_TTS_ENDPOINT = 'https://brazilsouth.api.cognitive.microsoft.com/'
+    AZURE_TTS_KEY = (current_app.config.get('TTS_AZURE_KEY') or '').strip()
+    base = current_app.config.get('TTS_AZURE_COGNITIVE_BASE') or 'https://brazilsouth.api.cognitive.microsoft.com/'
+    AZURE_TTS_ENDPOINT = base if base.endswith('/') else base + '/'
+
+    if not AZURE_TTS_KEY:
+        return jsonify({'erro': 'TTS não configurado. Defina TTS_AZURE_KEY no ambiente.'}), 503
 
     tts_url = f"{AZURE_TTS_ENDPOINT}cognitiveservices/v1"
     headers = {
@@ -598,15 +725,24 @@ def painel_fila_json():
         .limit(15)
         .all()
     )
-    return jsonify([{
-        'id': s.id,
-        # se número for 0 (chamada personalizada), mostra só a sigla
-        'senha_completa': s.sigla if s.numero == 0 else f"{s.sigla}{str(s.numero).zfill(4)}",
-        'chamado': s.chamado,
-        'chamado_por': s.chamado_por,
-        'chamado_em': s.chamado_em.isoformat() if s.chamado_em else None,
-        'numero': s.numero,
-    } for s in senhas])
+    dados = []
+    for s in senhas:
+        chamado_em_brasil = None
+        if s.chamado_em:
+            # Converter UTC para horário do Brasil
+            dt_brasil = utc_to_brasil(s.chamado_em)
+            chamado_em_brasil = dt_brasil.strftime('%Y-%m-%dT%H:%M:%S')
+        
+        dados.append({
+            'id': s.id,
+            # se número for 0 (chamada personalizada), mostra só a sigla
+            'senha_completa': s.sigla if s.numero == 0 else f"{s.sigla}{str(s.numero).zfill(4)}",
+            'chamado': s.chamado,
+            'chamado_por': s.chamado_por,
+            'chamado_em': chamado_em_brasil,
+            'numero': s.numero,
+        })
+    return jsonify(dados)
 
 
 @bp.route('/api/painel_action', methods=['POST'])
@@ -658,11 +794,21 @@ def painel_action():
         if not senha:
             return jsonify({'success': False, 'message': 'Nenhuma senha na fila.'}), 400
 
+        import time
+        commit_start = time.time()
+        
         senha.chamado = True
         senha.chamado_por = current_user.id
-        senha.chamado_em = datetime.utcnow()
+        chamado_em_now = datetime.utcnow()
+        senha.chamado_em = chamado_em_now
         senha.guiche = guiche
         db.session.commit()
+        
+        commit_duration = (time.time() - commit_start) * 1000  # ms
+        completo = senha.sigla if senha.numero == 0 else f"{senha.sigla}{str(senha.numero).zfill(4)}"
+        print(f"[TIMING] api/painel_action SALVO - Senha: {completo}, ID: {senha.id}, chamado_em: {chamado_em_now.isoformat()}, commit: {commit_duration:.2f}ms")
+        if commit_duration > 50:
+            print(f"[PERF] api/painel_action commit demorou {commit_duration:.2f}ms - Senha: {completo}")
         
         # Atualizar contador na sessão
         session['contador_normais'] = novo_contador
@@ -670,7 +816,6 @@ def painel_action():
         completo = senha.sigla if senha.numero == 0 else f"{senha.sigla}{str(senha.numero).zfill(4)}"
         mensagem_voz = tts_service.formatar_mensagem_voz(completo, guiche)
         session['mensagem_voz'] = mensagem_voz
-        
         return jsonify({'success': True, 'message': f"📢 Próxima senha: {completo}, dirija-se ao guichê {guiche}"})
 
     elif acao == 'rechamar':
@@ -687,8 +832,29 @@ def painel_action():
         completo = senha.sigla if senha.numero == 0 else f"{senha.sigla}{str(senha.numero).zfill(4)}"
         mensagem_voz = tts_service.formatar_mensagem_voz(completo, guiche)
         session['mensagem_voz'] = mensagem_voz
-        
         return jsonify({'success': True, 'message': f"🔁 Rechamada manual: Senha {completo}"})
+
+    elif acao == 'chamar_especifica':
+        senha_id = data.get('senha_id')
+        senha = Senha.query.get(senha_id)
+        
+        if not senha:
+            return jsonify({'success': False, 'error': 'Senha não encontrada.'}), 404
+        
+        if senha.chamado:
+            return jsonify({'success': False, 'error': 'Esta senha já foi chamada.'}), 400
+        
+        # Chamar a senha específica fora de ordem
+        senha.chamado = True
+        senha.chamado_em = datetime.utcnow()
+        senha.guiche = guiche
+        senha.chamado_por = current_user.id
+        db.session.commit()
+        
+        completo = senha.sigla if senha.numero == 0 else f"{senha.sigla}{str(senha.numero).zfill(4)}"
+        mensagem_voz = tts_service.formatar_mensagem_voz(completo, guiche)
+        session['mensagem_voz'] = mensagem_voz
+        return jsonify({'success': True, 'message': f"🎯 Chamada específica: Senha {completo}"})
 
     return jsonify({'success': False, 'message': 'Ação inválida.'}), 400
 
@@ -745,6 +911,33 @@ def api_update_system():
         print(f"❌ Falha na atualização por: {current_user.email} - {result.get('error', 'Erro desconhecido')}")
     
     return jsonify(result)
+
+@bp.route('/api/download_updater')
+@login_required
+def api_download_updater_script():
+    """API para baixar script de atualização para Windows"""
+    from flask import make_response
+    import os
+    
+    # Verificar se o arquivo existe
+    bat_file = 'atualizar_sistema.bat'
+    if not os.path.exists(bat_file):
+        return jsonify({'error': 'Script de atualização não encontrado'}), 404
+    
+    try:
+        # Ler o arquivo .bat criado
+        with open(bat_file, 'r', encoding='utf-8') as f:
+            content = f.read()
+        
+        # Criar resposta para download
+        response = make_response(content)
+        response.headers['Content-Type'] = 'application/x-download; charset=utf-8'
+        response.headers['Content-Disposition'] = f'attachment; filename="{bat_file}"'
+        
+        return response
+        
+    except Exception as e:
+        return jsonify({'error': f'Erro ao ler script: {str(e)}'}), 500
 
 # ============================================================================
 # RELATÓRIOS E DASHBOARD

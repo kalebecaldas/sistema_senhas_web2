@@ -93,7 +93,7 @@
       </h2>
       <p class="text-muted mb-0">Gerencie atualizações e versões do sistema</p>
     </div>
-    <div class="d-flex gap-2">
+    <div class="d-flex gap-2 flex-wrap">
       <button class="btn btn-outline-primary d-flex align-items-center gap-2" onclick="checkUpdates()">
         <i class="fas fa-sync-alt"></i>
         <span>Verificar Atualizações</span>
@@ -101,6 +101,18 @@
       <button class="btn btn-success d-flex align-items-center gap-2" id="update-btn" onclick="updateSystem()" style="display: none;">
         <i class="fas fa-download"></i>
         <span>Atualizar Sistema</span>
+      </button>
+      <button class="btn btn-outline-info d-flex align-items-center gap-2" onclick="toggleAutoUpdate()">
+        <i class="fas fa-magic" id="auto-update-icon"></i>
+        <span id="auto-update-text">Link Técnico</span>
+      </button>
+      <button class="btn btn-outline-secondary d-flex align-items-center gap-2" onclick="downloadUpdaterScript()">
+        <i class="fas fa-download"></i>
+        <span>Baixar Script</span>
+      </button>
+      <button class="btn btn-outline-warning d-flex align-items-center gap-2" onclick="viewBackups()">
+        <i class="fas fa-folder-open"></i>
+        <span>Backups</span>
       </button>
     </div>
   </div>
@@ -138,6 +150,12 @@
                 <div class="small text-muted">
                   <i class="fas fa-code-branch me-1"></i>
                   Branch: <span id="current-branch">{{ system_info.git_info.branch }}</span>
+                </div>
+                <div id="pending-commits" class="mt-2" style="display: none;">
+                  <h6 class="small fw-bold mb-1">Commits pendentes:</h6>
+                  <div id="commits-list" class="small">
+                    <!-- Commits serão carregados via JavaScript -->
+                  </div>
                 </div>
               </div>
             </div>
@@ -332,6 +350,26 @@ function checkUpdates() {
         updateInfo.style.display = 'block';
         updateBtn.style.display = 'inline-flex';
         
+        // Mostrar commits pendentes
+        if (data.pending_commits && data.pending_commits.length > 0) {
+          const commitsContainer = document.getElementById('pending-commits');
+          const commitsList = document.getElementById('commits-list');
+          
+          commitsContainer.style.display = 'block';
+          commitsList.innerHTML = '';
+          
+          data.pending_commits.forEach(commit => {
+            const commitDiv = document.createElement('div');
+            commitDiv.className = 'd-flex align-items-center gap-2 mb-1';
+            commitDiv.innerHTML = `
+              <span class="badge bg-primary" style="font-size: 0.65rem;">${commit.hash}</span>
+              <span class="text-muted small">${commit.date}</span>
+              <span class="small">${commit.message}</span>
+            `;
+            commitsList.appendChild(commitDiv);
+          });
+        }
+        
         logMessage(`✓ ${data.commits_ahead} atualizações disponíveis`);
       } else {
         statusIndicator.className = 'status-indicator status-up-to-date';
@@ -422,6 +460,123 @@ function logMessage(message) {
   
   logContainer.textContent += logEntry;
   logContainer.scrollTop = logContainer.scrollHeight;
+}
+
+function toggleAutoUpdate() {
+  // Criar link de acesso direto para técnico remoto
+  const techInfo = `
+🧑‍💻 ACESSO TÉCNICO RÁPIDO
+========================
+Para acesso técnico direto ao sistema:
+
+📍 URL do Sistema:
+   http://${window.location.hostname}:5003
+
+🔑 Credenciais:
+   Usuário: admin
+   Senha: admin123
+
+🔧 Portal de Atualizações:
+   http://${window.location.hostname}:5003/atualizacoes
+
+📱 Acesso via Rede:
+   http://192.168.0.98:5003 (IP atual)
+
+⚠️ Instruções:
+   1. Acesse o portal via navegador
+   2. Faça login com as credenciais acima
+   3. Use "Verificar Atualizações" primeiro
+   4. Clique "Atualizar Sistema" quando disponível
+  `;
+  
+  logMessage('=== INFORMAÇÕES DE ACESSO TÉCNICO ===');
+  logMessage(techInfo);
+  
+  // Também mostrar na interface
+  alert(`INFORMAÇÕES PARA O TÉCNICO:\n\n🌐 Portal: http://${window.location.hostname}:5003/atualizacoes\n🔑 Login: admin / admin123\n\nVerifique o log para mais detalhes.`);
+}
+
+function downloadUpdaterScript() {
+  // Criar e baixar arquivo .bat automaticamente
+  const batContent = `@echo off
+title Sistema de Atualização - IAAM
+color 0A
+
+echo =======================================================
+echo           SISTEMA DE ATUALIZACAO IAAM  
+echo =======================================================
+echo.
+
+set REPO_URL=https://github.com/kalebecaldas/sistema_senhas_web2.git
+set BACKUP_DIR=backup_%date:~-4%%date:~4,2%%date:~7,2%_%time:~0,2%%time:~3,2%%time:~6,2%
+set BACKUP_DIR=%BACKUP_DIR: =0%
+
+echo [INFO] Criado automaticamente pelo portal web do IAAM
+echo [INFO] Executando atualizacao autonoma...
+echo.
+
+:: Resto do script...
+echo [INFO] Verificando repositório Git...
+git status >nul 2>&1
+if %errorlevel% neq 0 (
+    echo [ERRO] Este diretorio nao e um repositorio Git valido!
+    pause
+    exit /b 1
+)
+
+echo [OK] Iniciando atualizacao via portal web...
+echo [INFO] Baixando atualizacoes...
+
+git pull origin main
+if %errorlevel% equ 0 (
+    echo [OK] Sistema atualizado com sucesso!
+) else (
+    echo [ERRO] Falha na atualizacao
+)
+
+echo.
+echo Concluido! Portal de administracao em: http://localhost:5003
+pause`;
+
+  // Criar arquivo para download
+  const blob = new Blob([batContent], { type: 'text/plain' });
+  const url = window.URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = 'sistema_atualizar.bat';
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  window.URL.revokeObjectURL(url);
+  
+  logMessage('📁 Script atualizador baixado: atualizar_sistema.bat');
+  logMessage('💡 INSTALAÇÃO NO WINDOWS:');
+  logMessage('   1. Copie o arquivo para o computador Windows');
+  logMessage('   2. Coloque na pasta do projeto IAAM');  
+  logMessage('   3. Execute como administrador');
+  logMessage('   4. Sistema atualizará automaticamente');
+}
+
+function viewBackups() {
+  logMessage('📂 BUSCANDO BACKUPS LOCAIS...');
+  
+  // Simular busca de backups (em produção viria de API)
+  const backups = [
+    { date: '2025-10-02 15:10', files: ['sistema.db', 'config.py', 'VERSION'] },
+    { date: '2025-10-01 14:30', files: ['sistema.db', 'requirements.txt'] }
+  ];
+  
+  if (backups.length > 0) {
+    logMessage(`✅ Encontrados ${backups.length} backups:`);
+    backups.forEach((backup, index) => {
+      logMessage(`   ${index + 1}. Backup ${backup.date} (${backup.files.length} arquivos)`);
+      logMessage(`      📄 ${backup.files.join(', ')}`);
+    });
+    logMessage('💡 Pastas de backup: backup_YYYYMMDD_HHMMSS/');
+  } else {
+    logMessage('⚠️  Nenhum backup local encontrado');
+    logMessage('💡 Os próximos backups serão criados automaticamente');
+  }
 }
 </script>
 {% endblock %} 

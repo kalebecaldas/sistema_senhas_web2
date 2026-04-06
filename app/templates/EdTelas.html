@@ -2,345 +2,960 @@
 {% block title %}Configurações de Display{% endblock %}
 
 {% block content %}
-<div class="container-fluid" style="padding-bottom: 2.5rem;">
-  <!-- Header -->
-  <div class="d-flex justify-content-between align-items-center mb-4">
-    <div>
-      <h2 class="fw-bold text-primary mb-1">
-        <i class="fas fa-tv me-2"></i>Configurações de Display
-      </h2>
-      <p class="text-muted mb-0">Personalize a aparência e comportamento do sistema</p>
-    </div>
-    <div class="d-flex align-items-center gap-2">
-      <a href="{{ url_for('main.display') }}" target="_blank" class="btn btn-outline-primary d-flex align-items-center gap-2">
-        <i class="fas fa-external-link-alt"></i>
-        <span>Visualizar Display</span>
-      </a>
-      <!-- Botões de ação movidos para o topo -->
-      <button type="submit" name="reset_cores" value="1" form="config-form" class="btn btn-outline-secondary d-flex align-items-center gap-2 ms-2">
-        <i class="fas fa-undo"></i>
-        <span>Cores Padrão</span>
-      </button>
-      <button type="submit" form="config-form" class="btn btn-primary btn-lg d-flex align-items-center gap-2 ms-2">
-        <i class="fas fa-save"></i>
-        <span>Salvar Configurações</span>
-      </button>
-    </div>
-  </div>
+<div class="container-fluid py-2" style="max-width: 1600px;">
 
   <form method="POST" action="{{ url_for('main.salvar_config') }}" enctype="multipart/form-data" id="config-form">
-    <div class="row g-4">
-      <!-- Logo e Mídia -->
-      <div class="col-lg-6">
-        <div class="card shadow-sm border-0 h-100">
-          <div class="card-header bg-light border-0">
-            <h5 class="card-title mb-0">
-              <i class="fas fa-image me-2 text-primary"></i>Logo e Mídia
-            </h5>
-          </div>
-          <div class="card-body">
-            <!-- Logo -->
-            <div class="mb-4">
-              <label for="logo" class="form-label fw-medium">
-                <i class="fas fa-image me-1"></i>Logo do Sistema
-              </label>
-              <input type="file" name="logo" accept="image/*" class="form-control" id="logo">
-              <div class="form-text">
-                <i class="fas fa-info-circle me-1"></i>
-                Formatos aceitos: PNG, JPG, GIF (máx. 2MB)
+
+    <!-- Compact Header: Tabs + Actions -->
+    <div class="d-flex justify-content-between align-items-center mb-3 gap-2 flex-wrap">
+
+      <!-- Tab Navigation -->
+      <ul class="nav nav-pills custom-tabs-compact mb-0 flex-grow-1" id="configTabs" role="tablist">
+        <li class="nav-item" role="presentation">
+          <button class="nav-link active" id="visual-tab" data-bs-toggle="tab" data-bs-target="#visual" type="button">
+            <i class="fas fa-palette me-1"></i><span class="d-none d-lg-inline">Visual & </span>Cores
+          </button>
+        </li>
+        <li class="nav-item" role="presentation">
+          <button class="nav-link" id="media-tab" data-bs-toggle="tab" data-bs-target="#media" type="button">
+            <i class="fas fa-image me-1"></i><span class="d-none d-lg-inline">Logo & </span>Mídia
+          </button>
+        </li>
+        <li class="nav-item" role="presentation">
+          <button class="nav-link" id="text-tab" data-bs-toggle="tab" data-bs-target="#text" type="button">
+            <i class="fas fa-font me-1"></i>Textos<span class="d-none d-lg-inline"> & Voz</span>
+          </button>
+        </li>
+        <li class="nav-item" role="presentation">
+          <button class="nav-link" id="playlist-tab" data-bs-toggle="tab" data-bs-target="#playlist" type="button">
+            <i class="fas fa-play-circle me-1"></i>Playlist
+          </button>
+        </li>
+        <li class="nav-item" role="presentation">
+          <button class="nav-link" id="preview-tab" data-bs-toggle="tab" data-bs-target="#preview" type="button">
+            <i class="fas fa-eye me-1"></i>Preview
+          </button>
+        </li>
+      </ul>
+
+      <!-- Action Buttons -->
+      <div class="d-flex gap-2">
+        <a href="{{ url_for('main.display') }}" target="_blank" class="btn btn-sm btn-outline-primary">
+          <i class="fas fa-external-link-alt"></i>
+          <span class="d-none d-md-inline ms-1">Display</span>
+        </a>
+        <button type="submit" name="reset_cores" value="1" class="btn btn-sm btn-outline-secondary">
+          <i class="fas fa-undo"></i>
+          <span class="d-none d-md-inline ms-1">Reset</span>
+        </button>
+        <button type="submit" class="btn btn-sm btn-primary">
+          <i class="fas fa-save me-1"></i>Salvar
+        </button>
+      </div>
+    </div>
+
+    <div class="tab-content" id="configTabsContent">
+
+      <!-- Visual & Cores Tab -->
+      <div class="tab-pane fade show active" id="visual" role="tabpanel">
+        <div class="row g-4">
+
+          <!-- Paleta de Cores Principal -->
+          <div class="col-lg-6">
+            <div class="config-card">
+              <div class="config-card-header">
+                <i class="fas fa-swatchbook text-primary me-2"></i>
+                <h5 class="mb-0">Paleta de Cores Principal</h5>
               </div>
-              
-              <!-- Preview Logo -->
-              <div class="mt-3 p-3 border rounded bg-light">
-                <label class="form-label small text-muted">Logo Atual:</label>
-                <div class="d-flex align-items-center">
-                  <img src="{{ url_for('static', filename=config.logo_path) }}" 
-                       alt="Logo atual" 
-                       class="me-3" 
-                       style="max-height: 60px; max-width: 200px; object-fit: contain;">
-                  <div class="small text-muted">
-                    <div><strong>Arquivo:</strong> {{ config.logo_path.split('/')[-1] }}</div>
-                    <div><strong>Dimensões:</strong> <span id="logo-dimensions">Carregando...</span></div>
+              <div class="config-card-body">
+                <div class="row g-3">
+
+                  <div class="col-md-6">
+                    <div class="color-picker-group">
+                      <label for="cor_fundo" class="form-label">
+                        <i class="fas fa-fill-drip me-2"></i>Fundo do Display
+                      </label>
+                      <div class="color-input-wrapper">
+                        <input type="color" name="cor_fundo" value="{{ config.cor_fundo }}" class="form-control-color"
+                          id="cor_fundo">
+                        <input type="text" class="form-control color-hex" value="{{ config.cor_fundo }}" readonly>
+                      </div>
+                      <small class="form-text">Cor de fundo geral da tela</small>
+                    </div>
+                  </div>
+
+                  <div class="col-md-6">
+                    <div class="color-picker-group">
+                      <label for="cor_texto" class="form-label">
+                        <i class="fas fa-font me-2"></i>Texto das Senhas
+                      </label>
+                      <div class="color-input-wrapper">
+                        <input type="color" name="cor_texto" value="{{ config.cor_texto }}" class="form-control-color"
+                          id="cor_texto">
+                        <input type="text" class="form-control color-hex" value="{{ config.cor_texto }}" readonly>
+                      </div>
+                      <small class="form-text">Cor dos números de senha</small>
+                    </div>
+                  </div>
+
+                  <div class="col-md-6">
+                    <div class="color-picker-group">
+                      <label for="cor_bemvindo" class="form-label">
+                        <i class="fas fa-hand-wave me-2"></i>Texto "Bem-vindo"
+                      </label>
+                      <div class="color-input-wrapper">
+                        <input type="color" name="cor_bemvindo" value="{{ config.cor_bemvindo }}"
+                          class="form-control-color" id="cor_bemvindo">
+                        <input type="text" class="form-control color-hex" value="{{ config.cor_bemvindo }}" readonly>
+                      </div>
+                      <small class="form-text">Cor do cabeçalho</small>
+                    </div>
+                  </div>
+
+                  <div class="col-md-6">
+                    <div class="color-picker-group">
+                      <label for="cor_hora" class="form-label">
+                        <i class="fas fa-clock me-2"></i>Relógio Digital
+                      </label>
+                      <div class="color-input-wrapper">
+                        <input type="color" name="cor_hora" value="{{ config.cor_hora }}" class="form-control-color"
+                          id="cor_hora">
+                        <input type="text" class="form-control color-hex" value="{{ config.cor_hora }}" readonly>
+                      </div>
+                      <small class="form-text">Cor da hora e data</small>
+                    </div>
+                  </div>
+
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Cores de Elementos -->
+          <div class="col-lg-6">
+            <div class="config-card">
+              <div class="config-card-header">
+                <i class="fas fa-border-style text-primary me-2"></i>
+                <h5 class="mb-0">Cores de Elementos</h5>
+              </div>
+              <div class="config-card-body">
+                <div class="row g-3">
+
+                  <div class="col-md-6">
+                    <div class="color-picker-group">
+                      <label for="cor_rodape" class="form-label">
+                        <i class="fas fa-window-minimize me-2"></i>Rodapé (Info)
+                      </label>
+                      <div class="color-input-wrapper">
+                        <input type="color" name="cor_rodape" value="{{ config.cor_rodape }}" class="form-control-color"
+                          id="cor_rodape">
+                        <input type="text" class="form-control color-hex" value="{{ config.cor_rodape }}" readonly>
+                      </div>
+                      <small class="form-text">Barra de informações</small>
+                    </div>
+                  </div>
+
+                  <div class="col-md-6">
+                    <div class="color-picker-group">
+                      <label for="contorno_senha" class="form-label">
+                        <i class="fas fa-square me-2"></i>Contornos
+                      </label>
+                      <div class="color-input-wrapper">
+                        <input type="color" name="contorno_senha" value="{{ config.contorno_senha }}"
+                          class="form-control-color" id="contorno_senha">
+                        <input type="text" class="form-control color-hex" value="{{ config.contorno_senha }}" readonly>
+                      </div>
+                      <small class="form-text">Bordas dos cards</small>
+                    </div>
+                  </div>
+
+                  <div class="col-md-6">
+                    <div class="color-picker-group">
+                      <label for="linha_senha" class="form-label">
+                        <i class="fas fa-minus me-2"></i>Separadores
+                      </label>
+                      <div class="color-input-wrapper">
+                        <input type="color" name="linha_senha" value="{{ config.linha_senha }}"
+                          class="form-control-color" id="linha_senha">
+                        <input type="text" class="form-control color-hex" value="{{ config.linha_senha }}" readonly>
+                      </div>
+                      <small class="form-text">Linhas entre itens</small>
+                    </div>
+                  </div>
+
+                  <div class="col-12">
+                    <div class="alert alert-info custom-alert mb-0">
+                      <i class="fas fa-lightbulb me-2"></i>
+                      <strong>Dica:</strong> As cores são aplicadas em tempo real no preview.
+                      O design usa tons de rosa e cinza para destaque das senhas.
+                    </div>
+                  </div>
+
+                </div>
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- Logo & Mídia Tab -->
+      <div class="tab-pane fade" id="media" role="tabpanel">
+        <div class="row g-4">
+
+          <!-- Logo -->
+          <div class="col-lg-6">
+            <div class="config-card">
+              <div class="config-card-header">
+                <i class="fas fa-image text-primary me-2"></i>
+                <h5 class="mb-0">Logo do Estabelecimento</h5>
+              </div>
+              <div class="config-card-body">
+
+                <!-- Upload -->
+                <div class="upload-zone mb-4">
+                  <label for="logo" class="upload-label">
+                    <div class="upload-content">
+                      <i class="fas fa-cloud-upload-alt fa-3x mb-3 text-primary opacity-50"></i>
+                      <h6 class="fw-bold mb-2">Clique ou arraste para enviar</h6>
+                      <p class="text-muted mb-0 small">PNG, JPG, GIF (máx. 2MB)</p>
+                    </div>
+                  </label>
+                  <input type="file" name="logo" accept="image/*" class="d-none" id="logo">
+                </div>
+
+                <!-- Preview Atual -->
+                <div class="media-preview">
+                  <label class="form-label fw-medium mb-3">
+                    <i class="fas fa-eye me-2"></i>Logo Atual
+                  </label>
+                  <div class="preview-container">
+                    <img src="{{ url_for('static', filename=config.logo_path) }}" alt="Logo atual"
+                      class="preview-image">
+                  </div>
+                  <div class="media-info mt-3">
+                    <div class="info-row">
+                      <span class="info-label">Arquivo:</span>
+                      <span class="info-value">{{ config.logo_path.split('/')[-1] }}</span>
+                    </div>
+                    <div class="info-row">
+                      <span class="info-label">Dimensões:</span>
+                      <span class="info-value" id="logo-dimensions">Carregando...</span>
+                    </div>
                   </div>
                 </div>
+
               </div>
             </div>
+          </div>
 
-            <!-- Vídeo de Fundo -->
-            <div class="mb-4">
-              <label for="video" class="form-label fw-medium">
-                <i class="fas fa-video me-1"></i>Vídeo de Fundo
-              </label>
-              <input type="file" name="video" accept="video/*" class="form-control" id="video">
-              <div class="form-text">
-                <i class="fas fa-info-circle me-1"></i>
-                Formatos aceitos: MP4, AVI, MOV (máx. 10MB)
+          <!-- Vídeo de Fundo -->
+          <div class="col-lg-6">
+            <div class="config-card">
+              <div class="config-card-header">
+                <i class="fas fa-video text-primary me-2"></i>
+                <h5 class="mb-0">Vídeo de Fundo</h5>
               </div>
-              
-              <!-- Preview Vídeo -->
-              <div class="mt-3 p-3 border rounded bg-light">
-                <label class="form-label small text-muted">Vídeo Atual:</label>
-                <div class="d-flex align-items-center">
-                  <video src="{{ url_for('static', filename=config.video_path) }}" 
-                         muted 
-                         style="max-height: 60px; max-width: 200px; object-fit: cover;"
-                         class="me-3">
-                  </video>
-                  <div class="small text-muted">
-                    <div><strong>Arquivo:</strong> {{ config.video_path.split('/')[-1] }}</div>
-                    <div><strong>Duração:</strong> <span id="video-duration">Carregando...</span></div>
+              <div class="config-card-body">
+
+                <!-- Upload -->
+                <div class="upload-zone mb-4">
+                  <label for="video" class="upload-label">
+                    <div class="upload-content">
+                      <i class="fas fa-film fa-3x mb-3 text-primary opacity-50"></i>
+                      <h6 class="fw-bold mb-2">Clique ou arraste para enviar</h6>
+                      <p class="text-muted mb-2 small"><strong>Recomendado:</strong> MP4 (H.264) - máx. 50MB</p>
+                      <p class="text-muted mb-0 small" style="font-size: 0.75rem;"><i class="fas fa-exclamation-triangle text-warning me-1"></i>Arquivos .MOV podem não funcionar em todos navegadores</p>
+                    </div>
+                  </label>
+                  <input type="file" name="video" accept="video/mp4,video/webm,video/avi" class="d-none" id="video">
+                </div>
+
+                <!-- Preview Atual -->
+                <div class="media-preview">
+                  <label class="form-label fw-medium mb-3">
+                    <i class="fas fa-eye me-2"></i>Vídeo Atual
+                  </label>
+                  <div class="preview-container">
+                    <video src="{{ url_for('static', filename=config.video_path) }}" muted loop autoplay
+                      class="preview-video">
+                    </video>
+                  </div>
+                  <div class="media-info mt-3">
+                    <div class="info-row">
+                      <span class="info-label">Arquivo:</span>
+                      <span class="info-value">{{ config.video_path.split('/')[-1] }}</span>
+                    </div>
+                    <div class="info-row">
+                      <span class="info-label">Duração:</span>
+                      <span class="info-value" id="video-duration">Carregando...</span>
+                    </div>
                   </div>
                 </div>
+
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- Textos & Voz Tab -->
+      <div class="tab-pane fade" id="text" role="tabpanel">
+        <div class="row g-4">
+
+          <!-- Mensagens -->
+          <div class="col-lg-6">
+            <div class="config-card">
+              <div class="config-card-header">
+                <i class="fas fa-comment-dots text-primary me-2"></i>
+                <h5 class="mb-0">Mensagens do Display</h5>
+              </div>
+              <div class="config-card-body">
+
+                <div class="mb-4">
+                  <label for="frase_bemvindo" class="form-label fw-medium">
+                    <i class="fas fa-quote-left me-2"></i>Frase de Boas-vindas (Rodapé)
+                  </label>
+                  <input type="text" name="frase_bemvindo" value="{{ config.frase_bemvindo }}"
+                    class="form-control form-control-lg" id="frase_bemvindo" placeholder="Ex: Bem-vindo ao IAAM">
+                  <small class="form-text">
+                    <i class="fas fa-info-circle me-1"></i>
+                    Texto que aparece na barra inferior (Info) do display
+                  </small>
+                </div>
+
+                <div class="alert alert-success custom-alert mb-0">
+                  <i class="fas fa-sparkles me-2"></i>
+                  <strong>Novo!</strong> O texto agora rola suavemente com efeito de desaparecimento nas bordas.
+                </div>
+
+              </div>
+            </div>
+          </div>
+
+          <!-- Voz TTS -->
+          <div class="col-lg-6">
+            <div class="config-card">
+              <div class="config-card-header">
+                <i class="fas fa-microphone-alt text-primary me-2"></i>
+                <h5 class="mb-0">Síntese de Voz (TTS)</h5>
+              </div>
+              <div class="config-card-body">
+
+                <div class="mb-4">
+                  <label for="voz_azure" class="form-label fw-medium">
+                    <i class="fas fa-user-voice me-2"></i>Voz para Chamadas
+                  </label>
+                  <select name="voz_azure" class="form-select form-select-lg" id="voz_azure">
+                    <option value="pt-BR-FranciscaNeural" {% if config.voz_azure=='pt-BR-FranciscaNeural' %}selected{%
+                      endif %}>
+                      👩 Francisca (Feminina - Natural)
+                    </option>
+                    <option value="pt-BR-AntonioNeural" {% if config.voz_azure=='pt-BR-AntonioNeural' %}selected{% endif
+                      %}>
+                      👨 Antonio (Masculina - Natural)
+                    </option>
+                    <option value="pt-BR-BrendaNeural" {% if config.voz_azure=='pt-BR-BrendaNeural' %}selected{% endif
+                      %}>
+                      👩 Brenda (Feminina - Suave)
+                    </option>
+                    <option value="pt-BR-DanielNeural" {% if config.voz_azure=='pt-BR-DanielNeural' %}selected{% endif
+                      %}>
+                      👨 Daniel (Masculina - Profissional)
+                    </option>
+                  </select>
+                  <small class="form-text">
+                    <i class="fas fa-info-circle me-1"></i>
+                    Voz utilizada para anunciar as senhas chamadas
+                  </small>
+                </div>
+
+                <!-- Teste de Voz -->
+                <div class="test-voice-section">
+                  <button type="button" class="btn btn-lg btn-outline-primary w-100" id="teste-voz">
+                    <i class="fas fa-volume-up me-2"></i>
+                    Testar Voz Selecionada
+                  </button>
+                  <small class="form-text d-block mt-2 text-center">
+                    Ouça um exemplo da voz antes de salvar
+                  </small>
+                </div>
+
+              </div>
+            </div>
+          </div>
+
+        </div>
+
+        <!-- Som de Chamada -->
+        <div class="row g-4 mt-1">
+          <div class="col-12">
+            <div class="config-card">
+              <div class="config-card-header">
+                <i class="fas fa-bell text-primary me-2"></i>
+                <h5 class="mb-0">Tom de Chamada</h5>
+              </div>
+              <div class="config-card-body">
+                <p class="text-muted mb-4">
+                  <i class="fas fa-info-circle me-2"></i>
+                  Escolha o som tocado no display quando uma senha for chamada. Clique em <strong>Testar</strong> para ouvir antes de salvar.
+                </p>
+
+                <div class="row g-3" id="som-chamada-opcoes">
+                  {% set som_atual = config.som_chamada or 'sino_suave' %}
+
+                  <!-- Sino Suave -->
+                  <div class="col-sm-6 col-lg-3">
+                    <label class="d-block h-100 cursor-pointer">
+                      <input type="radio" name="som_chamada" value="sino_suave" class="d-none som-radio"
+                        {% if som_atual == 'sino_suave' %}checked{% endif %}>
+                      <div class="card h-100 som-card {% if som_atual == 'sino_suave' %}border-primary shadow{% endif %}" style="border-width:2px;transition:all .2s;">
+                        <div class="card-body text-center py-4">
+                          <div class="mb-2" style="font-size:2rem;">🔔</div>
+                          <h6 class="fw-bold mb-1">Sino Suave</h6>
+                          <small class="text-muted d-block mb-3">Tom suave e gentil a 660 Hz</small>
+                          <button type="button" class="btn btn-sm btn-outline-primary btn-testar-som" data-som="sino_suave">
+                            <i class="fas fa-play me-1"></i> Testar
+                          </button>
+                        </div>
+                      </div>
+                    </label>
+                  </div>
+
+                  <!-- Duplo -->
+                  <div class="col-sm-6 col-lg-3">
+                    <label class="d-block h-100 cursor-pointer">
+                      <input type="radio" name="som_chamada" value="duplo" class="d-none som-radio"
+                        {% if som_atual == 'duplo' %}checked{% endif %}>
+                      <div class="card h-100 som-card {% if som_atual == 'duplo' %}border-primary shadow{% endif %}" style="border-width:2px;transition:all .2s;">
+                        <div class="card-body text-center py-4">
+                          <div class="mb-2" style="font-size:2rem;">🔔🔔</div>
+                          <h6 class="fw-bold mb-1">Duplo</h6>
+                          <small class="text-muted d-block mb-3">Dois toques suaves em sequência</small>
+                          <button type="button" class="btn btn-sm btn-outline-primary btn-testar-som" data-som="duplo">
+                            <i class="fas fa-play me-1"></i> Testar
+                          </button>
+                        </div>
+                      </div>
+                    </label>
+                  </div>
+
+                  <!-- Cristal -->
+                  <div class="col-sm-6 col-lg-3">
+                    <label class="d-block h-100 cursor-pointer">
+                      <input type="radio" name="som_chamada" value="cristal" class="d-none som-radio"
+                        {% if som_atual == 'cristal' %}checked{% endif %}>
+                      <div class="card h-100 som-card {% if som_atual == 'cristal' %}border-primary shadow{% endif %}" style="border-width:2px;transition:all .2s;">
+                        <div class="card-body text-center py-4">
+                          <div class="mb-2" style="font-size:2rem;">💎</div>
+                          <h6 class="fw-bold mb-1">Cristal</h6>
+                          <small class="text-muted d-block mb-3">Nota aguda e cristalina com longo fade</small>
+                          <button type="button" class="btn btn-sm btn-outline-primary btn-testar-som" data-som="cristal">
+                            <i class="fas fa-play me-1"></i> Testar
+                          </button>
+                        </div>
+                      </div>
+                    </label>
+                  </div>
+
+                  <!-- Sino Grave -->
+                  <div class="col-sm-6 col-lg-3">
+                    <label class="d-block h-100 cursor-pointer">
+                      <input type="radio" name="som_chamada" value="sino_grave" class="d-none som-radio"
+                        {% if som_atual == 'sino_grave' %}checked{% endif %}>
+                      <div class="card h-100 som-card {% if som_atual == 'sino_grave' %}border-primary shadow{% endif %}" style="border-width:2px;transition:all .2s;">
+                        <div class="card-body text-center py-4">
+                          <div class="mb-2" style="font-size:2rem;">🎵</div>
+                          <h6 class="fw-bold mb-1">Sino Grave</h6>
+                          <small class="text-muted d-block mb-3">Tom grave e encorpado a 330 Hz</small>
+                          <button type="button" class="btn btn-sm btn-outline-primary btn-testar-som" data-som="sino_grave">
+                            <i class="fas fa-play me-1"></i> Testar
+                          </button>
+                        </div>
+                      </div>
+                    </label>
+                  </div>
+
+                  <!-- Beep original (MP3) -->
+                  <div class="col-sm-6 col-lg-3">
+                    <label class="d-block h-100 cursor-pointer">
+                      <input type="radio" name="som_chamada" value="beep" class="d-none som-radio"
+                        {% if som_atual == 'beep' %}checked{% endif %}>
+                      <div class="card h-100 som-card {% if som_atual == 'beep' %}border-primary shadow{% endif %}" style="border-width:2px;transition:all .2s;">
+                        <div class="card-body text-center py-4">
+                          <div class="mb-2" style="font-size:2rem;">📢</div>
+                          <h6 class="fw-bold mb-1">Beep Original</h6>
+                          <small class="text-muted d-block mb-3">Som MP3 padrão do sistema</small>
+                          <button type="button" class="btn btn-sm btn-outline-primary btn-testar-som" data-som="beep">
+                            <i class="fas fa-play me-1"></i> Testar
+                          </button>
+                        </div>
+                      </div>
+                    </label>
+                  </div>
+
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Configurações de Impressoras Térmicas -->
+        <div class="row g-4 mt-1">
+          <div class="col-12">
+            <div class="config-card">
+              <div class="config-card-header">
+                <i class="fas fa-print text-primary me-2"></i>
+                <h5 class="mb-0">Configurações de Impressoras Térmicas</h5>
+              </div>
+              <div class="config-card-body">
+                <p class="text-muted mb-4">
+                  <i class="fas fa-info-circle me-2"></i>
+                  Configure os IPs das impressoras térmicas para impressão de senhas
+                </p>
+
+                <div class="row g-4">
+                  <!-- Impressora Principal -->
+                  <div class="col-md-6">
+                    <div class="card border-primary" style="border-width: 2px;">
+                      <div class="card-body">
+                        <h6 class="card-title text-primary mb-3">
+                          <i class="fas fa-print me-2"></i>Impressora Principal
+                        </h6>
+                        <small class="text-muted d-block mb-3">Usada na geração de senhas triadas</small>
+
+                        <div class="mb-3">
+                          <label for="impressora_principal_ip" class="form-label fw-medium">
+                            <i class="fas fa-network-wired me-2"></i>Endereço IP
+                          </label>
+                          <input 
+                            type="text" 
+                            name="impressora_principal_ip" 
+                            value="{{ config.impressora_principal_ip or '192.168.0.245' }}"
+                            class="form-control form-control-lg" 
+                            id="impressora_principal_ip"
+                            placeholder="192.168.0.245"
+                            pattern="^((25[0-5]|(2[0-4]|1\d|[1-9]|)\d)\.?\b){4}$">
+                          <small class="form-text">
+                            <i class="fas fa-info-circle me-1"></i>
+                            Formato: 192.168.0.245
+                          </small>
+                        </div>
+
+                        <div class="mb-0">
+                          <label for="impressora_principal_porta" class="form-label fw-medium">
+                            <i class="fas fa-ethernet me-2"></i>Porta
+                          </label>
+                          <input 
+                            type="number" 
+                            name="impressora_principal_porta" 
+                            value="{{ config.impressora_principal_porta or 9100 }}"
+                            class="form-control form-control-lg" 
+                            id="impressora_principal_porta"
+                            placeholder="9100"
+                            min="1"
+                            max="65535">
+                          <small class="form-text">
+                            <i class="fas fa-info-circle me-1"></i>
+                            Padrão: 9100 (ESC/POS)
+                          </small>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  <!-- Impressora Secundária -->
+                  <div class="col-md-6">
+                    <div class="card border-secondary" style="border-width: 2px;">
+                      <div class="card-body">
+                        <h6 class="card-title text-secondary mb-3">
+                          <i class="fas fa-print me-2"></i>Impressora Secundária
+                        </h6>
+                        <small class="text-muted d-block mb-3">Usada na tela de retirada de senha</small>
+
+                        <div class="mb-3">
+                          <label for="impressora_secundaria_ip" class="form-label fw-medium">
+                            <i class="fas fa-network-wired me-2"></i>Endereço IP
+                          </label>
+                          <input 
+                            type="text" 
+                            name="impressora_secundaria_ip" 
+                            value="{{ config.impressora_secundaria_ip or '192.168.0.48' }}"
+                            class="form-control form-control-lg" 
+                            id="impressora_secundaria_ip"
+                            placeholder="192.168.0.48"
+                            pattern="^((25[0-5]|(2[0-4]|1\d|[1-9]|)\d)\.?\b){4}$">
+                          <small class="form-text">
+                            <i class="fas fa-info-circle me-1"></i>
+                            Formato: 192.168.0.48
+                          </small>
+                        </div>
+
+                        <div class="mb-0">
+                          <label for="impressora_secundaria_porta" class="form-label fw-medium">
+                            <i class="fas fa-ethernet me-2"></i>Porta
+                          </label>
+                          <input 
+                            type="number" 
+                            name="impressora_secundaria_porta" 
+                            value="{{ config.impressora_secundaria_porta or 9100 }}"
+                            class="form-control form-control-lg" 
+                            id="impressora_secundaria_porta"
+                            placeholder="9100"
+                            min="1"
+                            max="65535">
+                          <small class="form-text">
+                            <i class="fas fa-info-circle me-1"></i>
+                            Padrão: 9100 (ESC/POS)
+                          </small>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Alerta informativo -->
+                <div class="alert alert-info custom-alert mt-4 mb-0">
+                  <i class="fas fa-lightbulb me-2"></i>
+                  <strong>Dica:</strong> Verifique o IP das impressoras no painel de administração da rede ou imprima uma página de configuração diretamente da impressora.
+                </div>
+
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Playlist Tab -->
+      <div class="tab-pane fade" id="playlist" role="tabpanel">
+        <div class="row g-4">
+
+          <!-- Gerenciador de Vídeos -->
+          <div class="col-12">
+            <div class="config-card">
+              <div class="config-card-header d-flex justify-content-between align-items-center">
+                <div class="d-flex align-items-center">
+                  <i class="fas fa-film text-primary me-2"></i>
+                  <h5 class="mb-0">Gerenciador de Vídeos</h5>
+                </div>
+                <div class="form-check form-switch">
+                  <input class="form-check-input" type="checkbox" name="playlist_enabled" id="playlist_enabled" {% if
+                    config.playlist_enabled %}checked{% endif %}>
+                  <label class="form-check-label fw-semibold" for="playlist_enabled">
+                    Ativar Playlist
+                  </label>
+                </div>
+              </div>
+              <div class="config-card-body">
+
+                <!-- Upload Zone -->
+                <div class="mb-4">
+                  <label class="form-label fw-medium mb-3">
+                    <i class="fas fa-cloud-upload-alt me-2"></i>Adicionar Vídeos à Playlist
+                  </label>
+                  <div class="upload-zone-playlist" id="video-upload-zone">
+                    <input type="file" name="playlist_videos" accept="video/*" multiple class="d-none"
+                      id="playlist-videos-input">
+                    <label for="playlist-videos-input" class="upload-label-playlist">
+                      <div class="upload-content-playlist">
+                        <i class="fas fa-video fa-3x mb-3 text-primary opacity-50"></i>
+                        <h6 class="fw-bold mb-2">Clique ou arraste vídeos aqui</h6>
+                        <p class="text-muted mb-2 small">MP4, AVI, MOV, WEBM (máx. 50MB cada)</p>
+                        <p class="text-muted mb-0 small"><strong>Máximo:</strong> 10 vídeos</p>
+                      </div>
+                    </label>
+                  </div>
+                </div>
+
+                <!-- Lista de Vídeos -->
+                <div class="playlist-videos-list" id="playlist-videos-list">
+                  <div class="d-flex justify-content-between align-items-center mb-3">
+                    <label class="form-label fw-medium mb-0">
+                      <i class="fas fa-list me-2"></i>Vídeos na Playlist (<span id="video-count">0</span>/10)
+                    </label>
+                    <button type="button" class="btn btn-sm btn-outline-danger" id="clear-playlist">
+                      <i class="fas fa-trash me-1"></i>Limpar Tudo
+                    </button>
+                  </div>
+
+                  <div class="alert alert-info custom-alert" id="empty-playlist-msg">
+                    <i class="fas fa-info-circle me-2"></i>
+                    Nenhum vídeo adicionado. Faça upload de vídeos para criar sua playlist.
+                  </div>
+
+                  <div class="videos-sortable" id="videos-sortable">
+                    <!-- Vídeos serão inseridos aqui via JavaScript -->
+                  </div>
+                </div>
+
+              </div>
+            </div>
+          </div>
+
+          <!-- Configurações de TV -->
+          <div class="col-lg-6">
+            <div class="config-card">
+              <div class="config-card-header d-flex justify-content-between align-items-center">
+                <div class="d-flex align-items-center">
+                  <i class="fas fa-tv text-primary me-2"></i>
+                  <h5 class="mb-0">TV Aberta (Pluto TV)</h5>
+                </div>
+                <div class="form-check form-switch">
+                  <input class="form-check-input" type="checkbox" name="tv_enabled" id="tv_enabled" {% if
+                    config.tv_enabled %}checked{% endif %}>
+                  <label class="form-check-label fw-semibold" for="tv_enabled">
+                    Ativar TV
+                  </label>
+                </div>
+              </div>
+              <div class="config-card-body">
+
+                <!-- Seletor de Canal -->
+                <div class="mb-4">
+                  <label for="tv_channel_id" class="form-label fw-medium">
+                    <i class="fas fa-broadcast-tower me-2"></i>Canal
+                  </label>
+                  <select name="tv_channel_id" class="form-select" id="tv_channel_id">
+                    <option value="">Selecione um canal...</option>
+                    <optgroup label="📰 Notícias">
+                      <option value="5f5a7b6d14a1af00074576a0" {% if config.tv_channel_id=='5f5a7b6d14a1af00074576a0'
+                        %}selected{% endif %}>
+                        Pluto TV Notícias
+                      </option>
+                      <option value="5f5132e3b66c76000790ef27" {% if config.tv_channel_id=='5f5132e3b66c76000790ef27'
+                        %}selected{% endif %}>
+                        CNN Brasil
+                      </option>
+                    </optgroup>
+                    <optgroup label="🎬 Filmes">
+                      <option value="5f120f41b7d403000783a6d6" {% if config.tv_channel_id=='5f120f41b7d403000783a6d6'
+                        %}selected{% endif %}>
+                        Pluto TV Cine Ação
+                      </option>
+                      <option value="5f120f5a546d770007a39f1f" {% if config.tv_channel_id=='5f120f5a546d770007a39f1f'
+                        %}selected{% endif %}>
+                        Pluto TV Cine Suspense
+                      </option>
+                      <option value="5f120f6b140bcf00077a2e4f" {% if config.tv_channel_id=='5f120f6b140bcf00077a2e4f'
+                        %}selected{% endif %}>
+                        Pluto TV Cine Drama
+                      </option>
+                    </optgroup>
+                    <optgroup label="📺 Séries">
+                      <option value="5f121460b73ac6000719fbaf" {% if config.tv_channel_id=='5f121460b73ac6000719fbaf'
+                        %}selected{% endif %}>
+                        Pluto TV Séries
+                      </option>
+                    </optgroup>
+                    <optgroup label="🎵 Música">
+                      <option value="5f5a545d0dbf7f0007c09408" {% if config.tv_channel_id=='5f5a545d0dbf7f0007c09408'
+                        %}selected{% endif %}>
+                        MTV Pluto TV
+                      </option>
+                    </optgroup>
+                    <optgroup label="😄 Entretenimento">
+                      <option value="5f120f0b140bcf00077a2e63" {% if config.tv_channel_id=='5f120f0b140bcf00077a2e63'
+                        %}selected{% endif %}>
+                        Pluto TV Comédia
+                      </option>
+                    </optgroup>
+                    <optgroup label="📚 Documentários">
+                      <option value="5f1214a637c6fd00079c652f" {% if config.tv_channel_id=='5f1214a637c6fd00079c652f'
+                        %}selected{% endif %}>
+                        Pluto TV Documentários
+                      </option>
+                    </optgroup>
+                    <optgroup label="👶 Infantil">
+                      <option value="5f121262a189a800076b9386" {% if config.tv_channel_id=='5f121262a189a800076b9386'
+                        %}selected{% endif %}>
+                        Pluto TV Kids
+                      </option>
+                    </optgroup>
+                  </select>
+                  <small class="form-text">
+                    <i class="fas fa-info-circle me-1"></i>
+                    Canal de TV que será exibido entre os vídeos
+                  </small>
+                </div>
+
+                <!-- Configurações de Rotação -->
+                <div class="row g-3">
+                  <div class="col-md-6">
+                    <label for="videos_before_tv" class="form-label fw-medium">
+                      <i class="fas fa-sort-numeric-up me-2"></i>Vídeos antes da TV
+                    </label>
+                    <input type="number" name="videos_before_tv" value="{{ config.videos_before_tv or 3 }}"
+                      class="form-control" id="videos_before_tv" min="1" max="10">
+                    <small class="form-text">Quantos vídeos reproduzir antes de mostrar a TV</small>
+                  </div>
+
+                  <div class="col-md-6">
+                    <label for="tv_duration_minutes" class="form-label fw-medium">
+                      <i class="fas fa-clock me-2"></i>Duração da TV (min)
+                    </label>
+                    <input type="number" name="tv_duration_minutes" value="{{ config.tv_duration_minutes or 10 }}"
+                      class="form-control" id="tv_duration_minutes" min="1" max="60">
+                    <small class="form-text">Por quanto tempo a TV ficará no ar</small>
+                  </div>
+                </div>
+
+                <div class="alert alert-success custom-alert mt-3 mb-0">
+                  <i class="fas fa-info-circle me-2"></i>
+                  <strong>Exemplo:</strong> Com 3 vídeos configurados, a sequência será:
+                  Vídeo 1 → Vídeo 2 → Vídeo 3 → TV (10 min) → Repetir
+                </div>
+
+              </div>
+            </div>
+          </div>
+
+          <!-- Configurações de Reprodução -->
+          <div class="col-lg-6">
+            <div class="config-card">
+              <div class="config-card-header">
+                <i class="fas fa-cog text-primary me-2"></i>
+                <h5 class="mb-0">Configurações de Reprodução</h5>
+              </div>
+              <div class="config-card-body">
+
+                <!-- Tipo de Transição -->
+                <div class="mb-4">
+                  <label for="transition_type" class="form-label fw-medium">
+                    <i class="fas fa-magic me-2"></i>Tipo de Transição
+                  </label>
+                  <select name="transition_type" class="form-select" id="transition_type">
+                    <option value="fade" {% if config.transition_type=='fade' %}selected{% endif %}>
+                      ✨ Fade (Desvanecimento)
+                    </option>
+                    <option value="crossfade" {% if config.transition_type=='crossfade' %}selected{% endif %}>
+                      🔄 Crossfade (Transição Cruzada)
+                    </option>
+                    <option value="slide" {% if config.transition_type=='slide' %}selected{% endif %}>
+                      ➡️ Slide (Deslizar)
+                    </option>
+                    <option value="none" {% if config.transition_type=='none' %}selected{% endif %}>
+                      ⚡ Sem Transição (Instantâneo)
+                    </option>
+                  </select>
+                  <small class="form-text">Efeito visual entre vídeos e TV</small>
+                </div>
+
+                <!-- Duração da Transição -->
+                <div class="mb-4">
+                  <label for="transition_duration" class="form-label fw-medium">
+                    <i class="fas fa-stopwatch me-2"></i>Duração da Transição
+                  </label>
+                  <div class="input-group">
+                    <input type="range" name="transition_duration" value="{{ config.transition_duration or 1.0 }}"
+                      class="form-range" id="transition_duration" min="0.3" max="3.0" step="0.1">
+                    <span class="input-group-text" id="transition-duration-value">{{ config.transition_duration or 1.0
+                      }}s</span>
+                  </div>
+                  <small class="form-text">Tempo de duração do efeito de transição</small>
+                </div>
+
+                <!-- Ordem de Reprodução -->
+                <div class="mb-4">
+                  <label for="play_order" class="form-label fw-medium">
+                    <i class="fas fa-random me-2"></i>Ordem de Reprodução
+                  </label>
+                  <select name="play_order" class="form-select" id="play_order">
+                    <option value="sequential" {% if config.play_order=='sequential' %}selected{% endif %}>
+                      📋 Sequencial (1, 2, 3...)
+                    </option>
+                    <option value="random" {% if config.play_order=='random' %}selected{% endif %}>
+                      🎲 Aleatória (Embaralhado)
+                    </option>
+                  </select>
+                  <small class="form-text">Como os vídeos serão reproduzidos</small>
+                </div>
+
+                <div class="alert alert-warning custom-alert mb-0">
+                  <i class="fas fa-exclamation-triangle me-2"></i>
+                  <strong>Atenção:</strong> Para ativar a playlist, marque o switch "Ativar Playlist"
+                  no topo da página e adicione pelo menos 1 vídeo.
+                </div>
+
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- Preview Tab -->
+      <div class="tab-pane fade" id="preview" role="tabpanel">
+        <div class="row">
+          <div class="col-12">
+            <div class="config-card">
+              <div class="config-card-header">
+                <i class="fas fa-desktop text-primary me-2"></i>
+                <h5 class="mb-0">Preview em Tempo Real</h5>
+              </div>
+              <div class="config-card-body">
+
+                <div class="alert alert-primary custom-alert mb-4">
+                  <i class="fas fa-info-circle me-2"></i>
+                  As alterações de cor são aplicadas instantaneamente no preview abaixo.
+                </div>
+
+                <div class="preview-display-container" id="preview-container"
+                  style="background-color: {{ config.cor_fundo }}; color: {{ config.cor_texto }}; border-color: {{ config.contorno_senha }};">
+
+                  <!-- Header Preview -->
+                  <div class="preview-header text-center mb-4 pb-3 border-bottom"
+                    style="border-color: {{ config.contorno_senha }} !important;">
+                    <h4 class="mb-2" style="color: {{ config.cor_bemvindo }};">
+                      <i class="fas fa-building me-2"></i>{{ config.frase_bemvindo or 'Bem-vindo!' }}
+                    </h4>
+                    <div class="fs-5 fw-light" style="color: {{ config.cor_hora }};">
+                      <i class="fas fa-clock me-2"></i>14:30:25
+                    </div>
+                  </div>
+
+                  <!-- Senhas Preview -->
+                  <div class="preview-senhas">
+                    <h6 class="text-uppercase fw-bold mb-3 opacity-75">Últimas Chamadas</h6>
+
+                    <div class="senha-item destacada mb-3 p-3 rounded-3" style="background: linear-gradient(135deg, rgba(244, 63, 94, 0.15) 0%, rgba(244, 63, 94, 0.05) 100%); 
+                                border: 2px solid rgba(244, 63, 94, 0.3); 
+                                border-bottom-color: {{ config.linha_senha }};">
+                      <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                          <span class="fw-bold fs-4 text-danger">A001</span>
+                          <small class="d-block text-danger opacity-75">Última Chamada</small>
+                        </div>
+                        <span class="badge bg-danger bg-opacity-25 text-danger px-3 py-2">Guichê 1</span>
+                      </div>
+                    </div>
+
+                    <div class="senha-item mb-2 p-3 rounded-3"
+                      style="background: rgba(255, 255, 255, 0.03); border-bottom: 1px solid {{ config.linha_senha }};">
+                      <div class="d-flex justify-content-between align-items-center">
+                        <span class="fw-bold fs-5">P002</span>
+                        <span class="badge bg-secondary bg-opacity-50 px-3 py-2">Guichê 2</span>
+                      </div>
+                    </div>
+
+                    <div class="senha-item p-3 rounded-3"
+                      style="background: rgba(255, 255, 255, 0.03); border-bottom: 1px solid {{ config.linha_senha }};">
+                      <div class="d-flex justify-content-between align-items-center">
+                        <span class="fw-bold fs-5">A003</span>
+                        <span class="badge bg-secondary bg-opacity-50 px-3 py-2">Guichê 3</span>
+                      </div>
+                    </div>
+                  </div>
+
+                </div>
+
               </div>
             </div>
           </div>
         </div>
       </div>
 
-      <!-- Cores do Sistema -->
-      <div class="col-lg-6">
-        <div class="card shadow-sm border-0 h-100">
-          <div class="card-header bg-light border-0">
-            <h5 class="card-title mb-0">
-              <i class="fas fa-palette me-2 text-primary"></i>Paleta de Cores
-            </h5>
-          </div>
-          <div class="card-body">
-            <div class="row g-3">
-              <!-- Cor de Fundo -->
-              <div class="col-md-6">
-                <label for="cor_fundo" class="form-label fw-medium">
-                  <i class="fas fa-fill-drip me-1"></i>Cor de Fundo
-                </label>
-                <div class="input-group">
-                  <input type="color" name="cor_fundo" value="{{ config.cor_fundo }}" 
-                         class="form-control form-control-color" id="cor_fundo">
-                  <span class="input-group-text">{{ config.cor_fundo }}</span>
-                </div>
-                <div class="form-text">
-                  <i class="fas fa-info-circle me-1"></i>
-                  Cor principal do fundo do display
-                </div>
-              </div>
-
-              <!-- Cor do Texto -->
-              <div class="col-md-6">
-                <label for="cor_texto" class="form-label fw-medium">
-                  <i class="fas fa-font me-1"></i>Cor do Texto
-                </label>
-                <div class="input-group">
-                  <input type="color" name="cor_texto" value="{{ config.cor_texto }}" 
-                         class="form-control form-control-color" id="cor_texto">
-                  <span class="input-group-text">{{ config.cor_texto }}</span>
-                </div>
-                <div class="form-text">
-                  <i class="fas fa-info-circle me-1"></i>
-                  Cor do texto das senhas
-                </div>
-              </div>
-
-              <!-- Cor do Rodapé -->
-              <div class="col-md-6">
-                <label for="cor_rodape" class="form-label fw-medium">
-                  <i class="fas fa-window-minimize me-1"></i>Cor do Rodapé
-                </label>
-                <div class="input-group">
-                  <input type="color" name="cor_rodape" value="{{ config.cor_rodape }}" 
-                         class="form-control form-control-color" id="cor_rodape">
-                  <span class="input-group-text">{{ config.cor_rodape }}</span>
-                </div>
-                <div class="form-text">
-                  <i class="fas fa-info-circle me-1"></i>
-                  Cor da barra inferior
-                </div>
-              </div>
-
-              <!-- Cor do Contorno -->
-              <div class="col-md-6">
-                <label for="contorno_senha" class="form-label fw-medium">
-                  <i class="fas fa-square me-1"></i>Contorno das Senhas
-                </label>
-                <div class="input-group">
-                  <input type="color" name="contorno_senha" value="{{ config.contorno_senha }}" 
-                         class="form-control form-control-color" id="contorno_senha">
-                  <span class="input-group-text">{{ config.contorno_senha }}</span>
-                </div>
-                <div class="form-text">
-                  <i class="fas fa-info-circle me-1"></i>
-                  Borda dos painéis de senha e sublinhado do título
-                </div>
-              </div>
-
-              <!-- Cor da Linha -->
-              <div class="col-md-6">
-                <label for="linha_senha" class="form-label fw-medium">
-                  <i class="fas fa-minus me-1"></i>Linha entre Senhas
-                </label>
-                <div class="input-group">
-                  <input type="color" name="linha_senha" value="{{ config.linha_senha }}" 
-                         class="form-control form-control-color" id="linha_senha">
-                  <span class="input-group-text">{{ config.linha_senha }}</span>
-                </div>
-                <div class="form-text">
-                  <i class="fas fa-info-circle me-1"></i>
-                  Cor da borda dos itens de senha
-                </div>
-              </div>
-
-              <!-- Texto de Boas-vindas -->
-              <div class="col-md-6">
-                <label for="cor_bemvindo" class="form-label fw-medium">
-                  <i class="fas fa-hand-wave me-1"></i>Texto de Boas-vindas
-                </label>
-                <div class="input-group">
-                  <input type="color" name="cor_bemvindo" value="{{ config.cor_bemvindo }}" 
-                         class="form-control form-control-color" id="cor_bemvindo">
-                  <span class="input-group-text">{{ config.cor_bemvindo }}</span>
-                </div>
-                <div class="form-text">
-                  <i class="fas fa-info-circle me-1"></i>
-                  Cor da mensagem de boas-vindas e do título
-                </div>
-              </div>
-
-              <!-- Cor da Hora -->
-              <div class="col-md-6">
-                <label for="cor_hora" class="form-label fw-medium">
-                  <i class="fas fa-clock me-1"></i>Cor da Hora
-                </label>
-                <div class="input-group">
-                  <input type="color" name="cor_hora" value="{{ config.cor_hora }}" 
-                         class="form-control form-control-color" id="cor_hora">
-                  <span class="input-group-text">{{ config.cor_hora }}</span>
-                </div>
-                <div class="form-text">
-                  <i class="fas fa-info-circle me-1"></i>
-                  Cor do relógio digital
-                </div>
-              </div>
-
-              <!-- AVISO SOBRE FUNDO DAS SENHAS -->
-              <div class="col-12">
-                <div class="alert alert-info alert-permanent mt-2 mb-0 p-2 small">
-                  <i class="fas fa-info-circle me-1"></i>
-                  O fundo dos itens de senha e da senha destacada são fixos no display (gradiente escuro e vermelho escuro, respectivamente).
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <!-- Textos e Voz -->
-      <div class="col-lg-6">
-        <div class="card shadow-sm border-0">
-          <div class="card-header bg-light border-0">
-            <h5 class="card-title mb-0">
-              <i class="fas fa-comments me-2 text-primary"></i>Textos e Voz
-            </h5>
-          </div>
-          <div class="card-body">
-            <!-- Frase de Boas-vindas -->
-            <div class="mb-4">
-              <label for="frase_bemvindo" class="form-label fw-medium">
-                <i class="fas fa-quote-left me-1"></i>Frase de Boas-vindas
-              </label>
-              <input type="text" name="frase_bemvindo" value="{{ config.frase_bemvindo }}" 
-                     class="form-control form-control-lg" id="frase_bemvindo"
-                     placeholder="Ex: Bem-vindo ao nosso estabelecimento">
-              <div class="form-text">
-                <i class="fas fa-info-circle me-1"></i>
-                Mensagem exibida na tela de boas-vindas
-              </div>
-            </div>
-
-            <!-- Voz Azure -->
-            <div class="mb-4">
-              <label for="voz_azure" class="form-label fw-medium">
-                <i class="fas fa-microphone me-1"></i>Voz para Chamadas
-              </label>
-              <select name="voz_azure" class="form-select form-select-lg" id="voz_azure">
-                <option value="pt-BR-FranciscaNeural" {% if config.voz_azure == 'pt-BR-FranciscaNeural' %}selected{% endif %}>
-                  <i class="fas fa-female me-2"></i>Francisca (Feminina - Natural)
-                </option>
-                <option value="pt-BR-AntonioNeural" {% if config.voz_azure == 'pt-BR-AntonioNeural' %}selected{% endif %}>
-                  <i class="fas fa-male me-2"></i>Antonio (Masculina - Natural)
-                </option>
-                <option value="pt-BR-BrendaNeural" {% if config.voz_azure == 'pt-BR-BrendaNeural' %}selected{% endif %}>
-                  <i class="fas fa-female me-2"></i>Brenda (Feminina - Suave)
-                </option>
-                <option value="pt-BR-DanielNeural" {% if config.voz_azure == 'pt-BR-DanielNeural' %}selected{% endif %}>
-                  <i class="fas fa-male me-2"></i>Daniel (Masculina - Profissional)
-                </option>
-              </select>
-              <div class="form-text">
-                <i class="fas fa-info-circle me-1"></i>
-                Voz utilizada nas chamadas de senha
-              </div>
-              
-              <!-- Teste de Voz -->
-              <div class="mt-3">
-                <button type="button" class="btn btn-outline-primary btn-sm" id="teste-voz">
-                  <i class="fas fa-play me-1"></i>Testar Voz
-                </button>
-                <div class="form-text">
-                  <i class="fas fa-info-circle me-1"></i>
-                  Clique para ouvir um exemplo da voz selecionada
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <!-- Preview -->
-      <div class="col-lg-6">
-        <div class="card shadow-sm border-0">
-          <div class="card-header bg-light border-0">
-            <h5 class="card-title mb-0">
-              <i class="fas fa-eye me-2 text-primary"></i>Preview das Cores
-            </h5>
-          </div>
-          <div class="card-body">
-            <div class="preview-container p-3 rounded" id="preview-container" 
-                 style="background-color: {{ config.cor_fundo }}; color: {{ config.cor_texto }}; border: 2px solid {{ config.contorno_senha }};">
-              <div class="text-center mb-3">
-                <h6 style="color: {{ config.cor_bemvindo }};">{{ config.frase_bemvindo or 'Bem-vindo!' }}</h6>
-                <div style="color: {{ config.cor_hora }};">14:30:25</div>
-              </div>
-              
-              <div class="senha-item mb-2 p-2 rounded" 
-                   style="background: linear-gradient(135deg, #23272f 60%, #11131a 100%); border-bottom: 1px solid {{ config.linha_senha }};">
-                <div class="d-flex justify-content-between align-items-center">
-                  <span class="fw-bold">A001</span>
-                  <span class="badge bg-secondary">Normal</span>
-                </div>
-              </div>
-              
-              <div class="senha-item mb-2 p-2 rounded" 
-                   style="background: linear-gradient(135deg, #b91c1c 60%, #7f1d1d 100%); border-bottom: 1px solid {{ config.linha_senha }};">
-                <div class="d-flex justify-content-between align-items-center">
-                  <span class="fw-bold">P002</span>
-                  <span class="badge bg-warning">Preferencial</span>
-                </div>
-              </div>
-              
-              <div class="senha-item p-2 rounded" 
-                   style="background: linear-gradient(135deg, #23272f 60%, #11131a 100%); border-bottom: 1px solid {{ config.linha_senha }};">
-                <div class="d-flex justify-content-between align-items-center">
-                  <span class="fw-bold">A003</span>
-                  <span class="badge bg-secondary">Normal</span>
-                </div>
-              </div>
-            </div>
-            
-            <div class="form-text mt-2">
-              <i class="fas fa-info-circle me-1"></i>
-              Preview em tempo real das configurações de cor
-            </div>
-          </div>
-        </div>
-      </div>
     </div>
   </form>
 </div>
@@ -359,264 +974,1270 @@
 </div>
 
 <style>
-/* Card Improvements */
-.card {
-  border-radius: 12px;
-  transition: all 0.2s ease;
-}
-
-.card:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 8px 25px rgba(0,0,0,0.1) !important;
-}
-
-/* Form Controls */
-.form-control, .form-select {
-  border-radius: 8px;
-  border: 2px solid #e9ecef;
-  transition: all 0.2s ease;
-}
-
-.form-control:focus, .form-select:focus {
-  border-color: #0d6efd;
-  box-shadow: 0 0 0 0.2rem rgba(13, 110, 253, 0.25);
-}
-
-/* Color Inputs */
-.form-control-color {
-  width: 60px;
-  height: 40px;
-  border-radius: 8px;
-}
-
-/* Buttons */
-.btn {
-  border-radius: 8px;
-  font-weight: 500;
-  transition: all 0.2s ease;
-}
-
-.btn:hover {
-  transform: translateY(-1px);
-  box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-}
-
-/* Preview Container */
-.preview-container {
-  min-height: 200px;
-  transition: all 0.3s ease;
-}
-
-.senha-item {
-  transition: all 0.2s ease;
-}
-
-/* Toast */
-.toast {
-  border-radius: 8px;
-  box-shadow: 0 8px 25px rgba(0,0,0,0.15);
-}
-
-/* Responsive */
-@media (max-width: 768px) {
-  .d-flex.justify-content-between {
-    flex-direction: column;
-    gap: 1rem;
+  /* Modern Premium Design with Enhanced Animations */
+  :root {
+    --primary: #667eea;
+    --primary-dark: #5a67d8;
+    --primary-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    --card-shadow: 0 10px 40px rgba(0, 0, 0, 0.08);
+    --card-hover-shadow: 0 15px 50px rgba(0, 0, 0, 0.12);
+    --border-radius: 16px;
+    --transition-base: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    --transition-fast: all 0.15s cubic-bezier(0.4, 0, 0.2, 1);
   }
-  
-  .btn {
+
+  /* Icon Box with Float Animation */
+  .icon-box {
+    width: 64px;
+    height: 64px;
+    background: var(--primary-gradient);
+    border-radius: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 28px;
+    box-shadow: 0 8px 20px rgba(102, 126, 234, 0.3);
+    animation: float 3s ease-in-out infinite;
+  }
+
+  @keyframes float {
+
+    0%,
+    100% {
+      transform: translateY(0px);
+    }
+
+    50% {
+      transform: translateY(-10px);
+    }
+  }
+
+  /* Custom Tabs with Ripple Effect */
+  .custom-tabs {
+    background: white;
+    padding: 8px;
+    border-radius: var(--border-radius);
+    box-shadow: var(--card-shadow);
+    border: none;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .custom-tabs .nav-link {
+    border-radius: 12px;
+    border: none;
+    padding: 12px 24px;
+    font-weight: 600;
+    color: #6c757d;
+    transition: var(--transition-base);
+    position: relative;
+    overflow: hidden;
+    z-index: 1;
+  }
+
+  .custom-tabs .nav-link::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 0;
+    height: 0;
+    border-radius: 50%;
+    background: rgba(102, 126, 234, 0.1);
+    transform: translate(-50%, -50%);
+    transition: width 0.6s, height 0.6s;
+    z-index: -1;
+  }
+
+  .custom-tabs .nav-link:hover::before {
+    width: 300px;
+    height: 300px;
+  }
+
+  .custom-tabs .nav-link:hover {
+    color: var(--primary);
+    transform: translateY(-2px);
+  }
+
+  .custom-tabs .nav-link.active {
+    background: var(--primary-gradient);
+    color: white;
+    box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+    transform: translateY(-2px);
+  }
+
+  .custom-tabs .nav-link.active::before {
+    display: none;
+  }
+
+  /* Compact Tabs Variant */
+  .custom-tabs-compact {
+    background: white;
+    padding: 4px;
+    border-radius: 10px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+    border: none;
+  }
+
+  .custom-tabs-compact .nav-link {
+    border-radius: 8px;
+    border: none;
+    padding: 8px 16px;
+    font-weight: 600;
+    font-size: 14px;
+    color: #6c757d;
+    transition: var(--transition-base);
+  }
+
+  .custom-tabs-compact .nav-link:hover {
+    color: var(--primary);
+    background: #f8f9fa;
+  }
+
+  .custom-tabs-compact .nav-link.active {
+    background: var(--primary-gradient);
+    color: white;
+    box-shadow: 0 2px 6px rgba(102, 126, 234, 0.3);
+  }
+
+  /* Tab Content Fade Animation */
+  .tab-pane {
+    animation: fadeInUp 0.4s ease-out;
+  }
+
+  @keyframes fadeInUp {
+    from {
+      opacity: 0;
+      transform: translateY(20px);
+    }
+
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  /* Config Cards */
+  .config-card {
+    background: white;
+    border-radius: var(--border-radius);
+    box-shadow: var(--card-shadow);
+    border: 1px solid rgba(0, 0, 0, 0.05);
+    overflow: hidden;
+    transition: var(--transition-base);
+    height: 100%;
+  }
+
+  .config-card:hover {
+    box-shadow: var(--card-hover-shadow);
+    transform: translateY(-4px);
+  }
+
+  .config-card-header {
+    background: linear-gradient(to right, #f8f9fa, white);
+    padding: 14px 18px;
+    border-bottom: 2px solid #f0f0f0;
+    display: flex;
+    align-items: center;
+  }
+
+  .config-card-header h5 {
+    font-weight: 700;
+    font-size: 16px;
+    color: #2d3748;
+    margin: 0;
+  }
+
+  .config-card-body {
+    padding: 16px;
+  }
+
+  /* Color Picker with Enhanced Interaction */
+  .color-picker-group {
+    margin-bottom: 0;
+  }
+
+  .color-picker-group label {
+    font-weight: 600;
+    color: #4a5568;
+    margin-bottom: 8px;
+    display: block;
+  }
+
+  .color-input-wrapper {
+    display: flex;
+    gap: 12px;
+    align-items: center;
+  }
+
+  .form-control-color {
+    width: 64px;
+    height: 48px;
+    border-radius: 12px;
+    border: 3px solid #e2e8f0;
+    cursor: pointer;
+    transition: var(--transition-base);
+    position: relative;
+  }
+
+  .form-control-color:hover {
+    border-color: var(--primary);
+    transform: scale(1.08) rotate(5deg);
+    box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+  }
+
+  .form-control-color:active {
+    transform: scale(0.95);
+  }
+
+  .color-hex {
+    flex: 1;
+    height: 48px;
+    border-radius: 12px;
+    border: 2px solid #e2e8f0;
+    padding: 0 16px;
+    font-family: 'Courier New', monospace;
+    font-weight: 600;
+    font-size: 14px;
+    background: #f8f9fa;
+    transition: var(--transition-fast);
+  }
+
+  .color-hex:focus {
+    border-color: var(--primary);
+    background: white;
+  }
+
+  .form-text {
+    color: #718096;
+    font-size: 12px;
+    margin-top: 6px;
+    display: block;
+  }
+
+  /* Upload Zone with Shimmer Effect */
+  .upload-zone {
+    border: 3px dashed #cbd5e0;
+    border-radius: var(--border-radius);
+    padding: 24px 16px;
+    text-align: center;
+    transition: var(--transition-base);
+    cursor: pointer;
+    background: #f8f9fa;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .upload-zone::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(102, 126, 234, 0.1), transparent);
+    transition: left 0.5s;
+  }
+
+  .upload-zone:hover::before {
+    left: 100%;
+  }
+
+  .upload-zone:hover {
+    border-color: var(--primary);
+    background: linear-gradient(135deg, rgba(102, 126, 234, 0.05) 0%, rgba(118, 75, 162, 0.05) 100%);
+    transform: scale(1.02);
+  }
+
+  .upload-label {
+    cursor: pointer;
+    margin: 0;
     width: 100%;
   }
-}
+
+  .upload-content h6 {
+    color: #2d3748;
+    font-weight: 600;
+  }
+
+  .upload-content i {
+    transition: var(--transition-base);
+  }
+
+  .upload-zone:hover .upload-content i {
+    transform: translateY(-5px) scale(1.1);
+  }
+
+  /* Media Preview */
+  .media-preview {
+    background: #f8f9fa;
+    border-radius: var(--border-radius);
+    padding: 20px;
+  }
+
+  .preview-container {
+    background: white;
+    border-radius: 12px;
+    padding: 20px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 150px;
+    border: 2px solid #e2e8f0;
+    transition: var(--transition-base);
+  }
+
+  .preview-container:hover {
+    border-color: var(--primary);
+    box-shadow: 0 4px 12px rgba(102, 126, 234, 0.1);
+  }
+
+  .preview-image {
+    max-width: 100%;
+    max-height: 200px;
+    object-fit: contain;
+    border-radius: 8px;
+    transition: var(--transition-base);
+  }
+
+  .preview-image:hover {
+    transform: scale(1.05);
+  }
+
+  .preview-video {
+    max-width: 100%;
+    max-height: 200px;
+    object-fit: cover;
+    border-radius: 8px;
+  }
+
+  .media-info {
+    background: white;
+    border-radius: 12px;
+    padding: 16px;
+  }
+
+  .info-row {
+    display: flex;
+    justify-content: space-between;
+    padding: 8px 0;
+    border-bottom: 1px solid #e2e8f0;
+  }
+
+  .info-row:last-child {
+    border-bottom: none;
+  }
+
+  .info-label {
+    font-weight: 600;
+    color: #4a5568;
+  }
+
+  .info-value {
+    color: #718096;
+    font-family: 'Courier New', monospace;
+  }
+
+  /* Form Controls */
+  .form-control,
+  .form-select {
+    border-radius: 12px;
+    border: 2px solid #e2e8f0;
+    padding: 12px 16px;
+    font-size: 15px;
+    transition: var(--transition-base);
+  }
+
+  .form-control:focus,
+  .form-select:focus {
+    border-color: var(--primary);
+    box-shadow: 0 0 0 4px rgba(102, 126, 234, 0.1);
+    transform: translateY(-1px);
+  }
+
+  .form-control-lg,
+  .form-select-lg {
+    padding: 14px 20px;
+    font-size: 16px;
+  }
+
+  /* Buttons with Ripple Effect */
+  .btn {
+    border-radius: 12px;
+    font-weight: 600;
+    padding: 12px 24px;
+    transition: var(--transition-base);
+    border: none;
+    position: relative;
+    overflow: hidden;
+    z-index: 1;
+  }
+
+  .btn::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 0;
+    height: 0;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.5);
+    transform: translate(-50%, -50%);
+    transition: width 0.6s, height 0.6s;
+    z-index: -1;
+  }
+
+  .btn:active::before {
+    width: 300px;
+    height: 300px;
+    transition: width 0.1s, height 0.1s;
+  }
+
+  .btn-lg {
+    padding: 14px 28px;
+    font-size: 16px;
+  }
+
+  .btn-primary {
+    background: var(--primary-gradient);
+    box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+  }
+
+  .btn-primary:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 8px 20px rgba(102, 126, 234, 0.4);
+  }
+
+  .btn-primary:active {
+    transform: translateY(-1px);
+  }
+
+  .btn-outline-primary {
+    border: 2px solid var(--primary);
+    color: var(--primary);
+    background: transparent;
+  }
+
+  .btn-outline-primary::before {
+    background: var(--primary);
+  }
+
+  .btn-outline-primary:hover {
+    background: var(--primary);
+    color: white;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+  }
+
+  .btn-outline-secondary {
+    border: 2px solid #6c757d;
+    color: #6c757d;
+    background: transparent;
+  }
+
+  .btn-outline-secondary::before {
+    background: #6c757d;
+  }
+
+  .btn-outline-secondary:hover {
+    background: #6c757d;
+    color: white;
+    transform: translateY(-2px);
+  }
+
+  /* Loading State */
+  .btn:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+    transform: none !important;
+  }
+
+  .btn .fa-spinner {
+    animation: spin 1s linear infinite;
+  }
+
+  @keyframes spin {
+    from {
+      transform: rotate(0deg);
+    }
+
+    to {
+      transform: rotate(360deg);
+    }
+  }
+
+  /* Custom Alerts */
+  .custom-alert {
+    border-radius: 12px;
+    border: none;
+    padding: 16px 20px;
+    font-size: 14px;
+    animation: slideInRight 0.4s ease-out;
+  }
+
+  @keyframes slideInRight {
+    from {
+      opacity: 0;
+      transform: translateX(20px);
+    }
+
+    to {
+      opacity: 1;
+      transform: translateX(0);
+    }
+  }
+
+  .alert-info {
+    background: linear-gradient(135deg, #e0f2fe 0%, #bae6fd 100%);
+    color: #075985;
+  }
+
+  .alert-success {
+    background: linear-gradient(135deg, #dcfce7 0%, #bbf7d0 100%);
+    color: #166534;
+  }
+
+  .alert-primary {
+    background: linear-gradient(135deg, rgba(102, 126, 234, 0.1) 0%, rgba(118, 75, 162, 0.1) 100%);
+    color: #5a67d8;
+    border-left: 4px solid var(--primary);
+  }
+
+  /* Preview Display */
+  .preview-display-container {
+    border-radius: var(--border-radius);
+    padding: 32px;
+    min-height: 400px;
+    border: 3px solid;
+    transition: var(--transition-base);
+  }
+
+  .senha-item {
+    transition: var(--transition-base);
+  }
+
+  .senha-item:hover {
+    transform: translateX(8px);
+  }
+
+  .senha-item.destacada {
+    animation: pulse-glow 2s ease-in-out infinite;
+  }
+
+  @keyframes pulse-glow {
+
+    0%,
+    100% {
+      box-shadow: 0 0 15px rgba(244, 63, 94, 0.2);
+    }
+
+    50% {
+      box-shadow: 0 0 25px rgba(244, 63, 94, 0.4);
+    }
+  }
+
+  /* Toast */
+  .toast {
+    border-radius: 12px;
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+    animation: slideInUp 0.4s ease-out;
+  }
+
+  @keyframes slideInUp {
+    from {
+      opacity: 0;
+      transform: translateY(20px);
+    }
+
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  /* Responsive */
+  @media (max-width: 991px) {
+    .icon-box {
+      width: 48px;
+      height: 48px;
+      font-size: 20px;
+    }
+
+    .display-6 {
+      font-size: 1.75rem;
+    }
+
+    .btn-lg {
+      padding: 10px 20px;
+      font-size: 14px;
+    }
+  }
+
+  @media (max-width: 576px) {
+    .custom-tabs {
+      padding: 4px;
+    }
+
+    .custom-tabs .nav-link {
+      padding: 8px 12px;
+      font-size: 13px;
+    }
+
+    .config-card-header {
+      padding: 16px;
+    }
+
+    .config-card-body {
+      padding: 16px;
+    }
+
+    .color-input-wrapper {
+      flex-direction: column;
+      align-items: stretch;
+    }
+
+    .form-control-color {
+      width: 100%;
+    }
+  }
+
+  /* Playlist Styles */
+  .upload-zone-playlist {
+    border: 3px dashed #cbd5e0;
+    border-radius: var(--border-radius);
+    padding: 32px 20px;
+    text-align: center;
+    transition: var(--transition-base);
+    cursor: pointer;
+    background: #f8f9fa;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .upload-zone-playlist::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(102, 126, 234, 0.1), transparent);
+    transition: left 0.5s;
+  }
+
+  .upload-zone-playlist:hover::before {
+    left: 100%;
+  }
+
+  .upload-zone-playlist:hover {
+    border-color: var(--primary);
+    background: linear-gradient(135deg, rgba(102, 126, 234, 0.05) 0%, rgba(118, 75, 162, 0.05) 100%);
+    transform: scale(1.01);
+  }
+
+  .upload-zone-playlist.drag-over {
+    border-color: var(--primary);
+    background: linear-gradient(135deg, rgba(102, 126, 234, 0.1) 0%, rgba(118, 75, 162, 0.1) 100%);
+    border-style: solid;
+  }
+
+  .upload-label-playlist {
+    cursor: pointer;
+    margin: 0;
+    width: 100%;
+  }
+
+  .upload-content-playlist h6 {
+    color: #2d3748;
+    font-weight: 600;
+  }
+
+  .upload-content-playlist i {
+    transition: var(--transition-base);
+  }
+
+  .upload-zone-playlist:hover .upload-content-playlist i {
+    transform: translateY(-5px) scale(1.1);
+  }
+
+  /* Video List Item */
+  .video-item {
+    background: white;
+    border-radius: 12px;
+    padding: 12px;
+    margin-bottom: 12px;
+    border: 2px solid #e2e8f0;
+    transition: var(--transition-base);
+    cursor: move;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .video-item:hover {
+    border-color: var(--primary);
+    box-shadow: 0 4px 12px rgba(102, 126, 234, 0.15);
+    transform: translateY(-2px);
+  }
+
+  .video-item.dragging {
+    opacity: 0.5;
+    transform: scale(0.95);
+  }
+
+  .video-thumbnail {
+    width: 80px;
+    height: 60px;
+    border-radius: 8px;
+    object-fit: cover;
+    background: #f8f9fa;
+    flex-shrink: 0;
+  }
+
+  .video-info {
+    flex: 1;
+    min-width: 0;
+  }
+
+  .video-name {
+    font-weight: 600;
+    color: #2d3748;
+    font-size: 14px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .video-meta {
+    font-size: 12px;
+    color: #718096;
+    margin-top: 4px;
+  }
+
+  .video-actions {
+    display: flex;
+    gap: 8px;
+    flex-shrink: 0;
+  }
+
+  .video-actions .btn {
+    padding: 6px 12px;
+    font-size: 12px;
+  }
+
+  .drag-handle {
+    cursor: move;
+    color: #cbd5e0;
+    font-size: 18px;
+    transition: var(--transition-fast);
+  }
+
+  .video-item:hover .drag-handle {
+    color: var(--primary);
+  }
+
+  /* Form Switches */
+  .form-check-input {
+    width: 48px;
+    height: 24px;
+    cursor: pointer;
+    border: 2px solid #cbd5e0;
+    transition: var(--transition-base);
+  }
+
+  .form-check-input:checked {
+    background-color: var(--primary);
+    border-color: var(--primary);
+    box-shadow: 0 0 0 4px rgba(102, 126, 234, 0.1);
+  }
+
+  .form-check-input:focus {
+    box-shadow: 0 0 0 4px rgba(102, 126, 234, 0.2);
+  }
+
+  /* Range Input */
+  .form-range {
+    height: 6px;
+    border-radius: 3px;
+    background: linear-gradient(to right, var(--primary) 0%, var(--primary) 33%, #e2e8f0 33%, #e2e8f0 100%);
+    outline: none;
+    transition: var(--transition-base);
+  }
+
+  .form-range::-webkit-slider-thumb {
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    background: var(--primary-gradient);
+    cursor: pointer;
+    box-shadow: 0 2px 8px rgba(102, 126, 234, 0.3);
+    transition: var(--transition-fast);
+  }
+
+  .form-range::-webkit-slider-thumb:hover {
+    transform: scale(1.2);
+    box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+  }
+
+  .form-range::-moz-range-thumb {
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    background: var(--primary-gradient);
+    cursor: pointer;
+    box-shadow: 0 2px 8px rgba(102, 126, 234, 0.3);
+    border: none;
+  }
+
+  #transition-duration-value {
+    min-width: 60px;
+    font-weight: 600;
+    color: var(--primary);
+  }
 </style>
 
 <script>
-// Função para inicializar o JavaScript da página
-function initializeEdTelasPage() {
-  const form = document.getElementById('config-form');
-  const colorInputs = document.querySelectorAll('input[type="color"]');
-  const previewContainer = document.getElementById('preview-container');
-  const testeVozBtn = document.getElementById('teste-voz');
-  
-  // Verificar se os elementos existem
-  if (!form || !previewContainer || !testeVozBtn) {
-    console.log('Elementos não encontrados, aguardando...');
-    setTimeout(initializeEdTelasPage, 100);
-    return;
-  }
-  
-  console.log('Inicializando página EdTelas...');
-  
-  // Update preview when colors change
-  function updatePreview() {
-    const corFundo = document.getElementById('cor_fundo').value;
-    const corTexto = document.getElementById('cor_texto').value;
-    const corContorno = document.getElementById('contorno_senha').value;
-    const corBemvindo = document.getElementById('cor_bemvindo').value;
-    const corHora = document.getElementById('cor_hora').value;
-    const corLinha = document.getElementById('linha_senha').value;
-    
-    previewContainer.style.backgroundColor = corFundo;
-    previewContainer.style.color = corTexto;
-    previewContainer.style.borderColor = corContorno;
-    
-    // Update preview elements
-    const bemvindoText = previewContainer.querySelector('h6');
-    const horaText = previewContainer.querySelector('div[style*="color"]');
-    const senhaItems = previewContainer.querySelectorAll('.senha-item');
-    
-    bemvindoText.style.color = corBemvindo;
-    horaText.style.color = corHora;
-    
-    senhaItems.forEach((item, index) => {
-      // Fundo fixo igual ao display
-      if (index === 1) { // Highlighted item
-        item.style.background = 'linear-gradient(135deg, #b91c1c 60%, #7f1d1d 100%)';
-      } else {
-        item.style.background = 'linear-gradient(135deg, #23272f 60%, #11131a 100%)';
-      }
-      item.style.borderBottomColor = corLinha;
+  // Initialize page
+  function initializeEdTelasPage() {
+    const form = document.getElementById('config-form');
+    const colorInputs = document.querySelectorAll('input[type="color"]');
+    const previewContainer = document.getElementById('preview-container');
+    const testeVozBtn = document.getElementById('teste-voz');
+
+    if (!form || !previewContainer || !testeVozBtn) {
+      setTimeout(initializeEdTelasPage, 100);
+      return;
+    }
+
+    console.log('EdTelas page initialized');
+
+    // Update color hex displays
+    colorInputs.forEach(input => {
+      const hexInput = input.parentElement.querySelector('.color-hex');
+
+      input.addEventListener('input', function () {
+        if (hexInput) hexInput.value = this.value.toUpperCase();
+        updatePreview();
+      });
     });
-  }
-  
-  // Add event listeners to color inputs
-  colorInputs.forEach(input => {
-    input.addEventListener('input', updatePreview);
-    input.addEventListener('change', function() {
-      // Update the text display next to color input
-      const textSpan = this.parentElement.querySelector('.input-group-text');
-      if (textSpan) {
-        textSpan.textContent = this.value;
-      }
-    });
-  });
-  
-  // Test voice functionality - Usar uma abordagem mais robusta
-  // Remover todos os event listeners anteriores
-  const newBtn = testeVozBtn.cloneNode(true);
-  testeVozBtn.parentNode.replaceChild(newBtn, testeVozBtn);
-  
-  // Adicionar o novo event listener
-  newBtn.addEventListener('click', function() {
-    const vozSelecionada = document.getElementById('voz_azure').value;
-    const textoTeste = 'Teste de voz do sistema de senhas';
-    
-    console.log('Iniciando teste de voz:', { voz: vozSelecionada, texto: textoTeste });
-    
-    // Show loading state
-    const originalText = this.innerHTML;
-    this.innerHTML = '<i class="fas fa-spinner fa-spin me-1"></i>Testando...';
-    this.disabled = true;
-    
-    // Make TTS request
-    const url = `/tts_audio?texto=${encodeURIComponent(textoTeste)}&voz=${encodeURIComponent(vozSelecionada)}`;
-    console.log('Fazendo requisição para:', url);
-    
-    fetch(url)
-      .then(response => {
-        console.log('Resposta recebida:', response.status, response.statusText);
-        if (response.ok) {
-          return response.blob();
-        }
-        throw new Error(`Erro HTTP: ${response.status} - ${response.statusText}`);
-      })
-      .then(blob => {
-        console.log('Áudio recebido, tamanho:', blob.size, 'bytes');
-        const audio = new Audio(URL.createObjectURL(blob));
-        
-        audio.addEventListener('loadstart', () => console.log('Áudio começando a carregar'));
-        audio.addEventListener('canplay', () => console.log('Áudio pronto para reproduzir'));
-        audio.addEventListener('play', () => console.log('Áudio iniciado'));
-        audio.addEventListener('ended', () => console.log('Áudio finalizado'));
-        audio.addEventListener('error', (e) => console.error('Erro no áudio:', e));
-        
-        audio.play().catch(error => {
-          console.error('Erro ao reproduzir áudio:', error);
-          alert('Erro ao reproduzir áudio. Verifique se o som está habilitado.');
+
+    // Preview update
+    function updatePreview() {
+      const corFundo = document.getElementById('cor_fundo').value;
+      const corTexto = document.getElementById('cor_texto').value;
+      const corContorno = document.getElementById('contorno_senha').value;
+      const corBemvindo = document.getElementById('cor_bemvindo').value;
+      const corHora = document.getElementById('cor_hora').value;
+      const corLinha = document.getElementById('linha_senha').value;
+
+      previewContainer.style.backgroundColor = corFundo;
+      previewContainer.style.color = corTexto;
+      previewContainer.style.borderColor = corContorno;
+
+      const bemvindoText = previewContainer.querySelector('h4');
+      const horaText = previewContainer.querySelector('.fs-5');
+      const senhaItems = previewContainer.querySelectorAll('.senha-item:not(.destacada)');
+
+      if (bemvindoText) bemvindoText.style.color = corBemvindo;
+      if (horaText) horaText.style.color = corHora;
+
+      senhaItems.forEach(item => {
+        item.style.borderBottomColor = corLinha;
+      });
+    }
+
+    // Voice test
+    const newBtn = testeVozBtn.cloneNode(true);
+    testeVozBtn.parentNode.replaceChild(newBtn, testeVozBtn);
+
+    newBtn.addEventListener('click', function () {
+      const vozSelecionada = document.getElementById('voz_azure').value;
+      const textoTeste = 'Testando voz do sistema de senhas';
+
+      const originalHTML = this.innerHTML;
+      this.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Testando...';
+      this.disabled = true;
+
+      const url = `/tts_audio?texto=${encodeURIComponent(textoTeste)}&voz=${encodeURIComponent(vozSelecionada)}`;
+
+      fetch(url)
+        .then(response => {
+          if (response.ok) return response.blob();
+          throw new Error(`Erro HTTP: ${response.status}`);
+        })
+        .then(blob => {
+          const audio = new Audio(URL.createObjectURL(blob));
+          audio.play().catch(error => {
+            alert('Erro ao reproduzir áudio. Verifique se o som está habilitado.');
+          });
+        })
+        .catch(error => {
+          alert(`Erro ao testar voz: ${error.message}`);
+        })
+        .finally(() => {
+          this.innerHTML = originalHTML;
+          this.disabled = false;
         });
-      })
-      .catch(error => {
-        console.error('Erro no teste de voz:', error);
-        alert(`Erro ao testar voz: ${error.message}`);
-      })
-      .finally(() => {
-        this.innerHTML = originalText;
-        this.disabled = false;
-      });
-  });
-  
-  // Form submission
-  form.addEventListener('submit', function(event) {
-    // Show loading state
-    const submitBtn = form.querySelector('button[type="submit"]:not([name="reset_cores"])');
-    if (submitBtn) {
-      const originalText = submitBtn.innerHTML;
-      submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Salvando...';
-      submitBtn.disabled = true;
-      
-      // Re-enable after a delay (in case of error)
-      setTimeout(() => {
-        submitBtn.innerHTML = originalText;
-        submitBtn.disabled = false;
-      }, 5000);
+    });
+
+    // ── Tom de Chamada ─────────────────────────────────────────────────────
+    function tocarSomPreview(tipo) {
+      if (tipo === 'beep') {
+        new Audio('/static/audio/beep.mp3').play().catch(() => {});
+        return;
+      }
+      const ctx = new (window.AudioContext || window.webkitAudioContext)();
+      function pulso(freq, startTime, duration, volume) {
+        const osc  = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc.connect(gain);
+        gain.connect(ctx.destination);
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(freq, startTime);
+        gain.gain.setValueAtTime(0, startTime);
+        gain.gain.linearRampToValueAtTime(volume, startTime + 0.005);
+        gain.gain.exponentialRampToValueAtTime(0.0001, startTime + duration);
+        osc.start(startTime);
+        osc.stop(startTime + duration + 0.01);
+      }
+      const now = ctx.currentTime;
+      if (tipo === 'sino_suave') {
+        pulso(660, now, 1.5, 0.35);
+      } else if (tipo === 'duplo') {
+        pulso(700, now, 0.9, 0.30);
+        pulso(700, now + 0.28, 0.9, 0.28);
+      } else if (tipo === 'cristal') {
+        pulso(1320, now, 2.0, 0.22);
+      } else if (tipo === 'sino_grave') {
+        pulso(330, now, 1.8, 0.35);
+        pulso(660, now, 1.8, 0.12);
+      }
     }
-  });
-  
-  // Initialize preview
-  updatePreview();
-  
-  // Load file information
-  function loadFileInfo() {
-    // Logo dimensions
-    const logoImg = document.querySelector('img[src*="logo"]');
-    if (logoImg) {
-      logoImg.onload = function() {
-        document.getElementById('logo-dimensions').textContent = 
-          `${this.naturalWidth}x${this.naturalHeight}px`;
+
+    // Highlight the selected card and handle radio state
+    function atualizarCardsSom() {
+      document.querySelectorAll('.som-radio').forEach(radio => {
+        const card = radio.closest('label').querySelector('.som-card');
+        if (radio.checked) {
+          card.classList.add('border-primary', 'shadow');
+        } else {
+          card.classList.remove('border-primary', 'shadow');
+        }
+      });
+    }
+
+    document.querySelectorAll('.som-radio').forEach(radio => {
+      radio.addEventListener('change', atualizarCardsSom);
+    });
+
+    // Allow clicking on the card body (not just the label) to select
+    document.querySelectorAll('.som-card').forEach(card => {
+      card.addEventListener('click', function (e) {
+        if (e.target.closest('.btn-testar-som')) return; // handled separately
+        const radio = this.closest('label').querySelector('.som-radio');
+        if (radio) { radio.checked = true; atualizarCardsSom(); }
+      });
+    });
+
+    document.querySelectorAll('.btn-testar-som').forEach(btn => {
+      btn.addEventListener('click', function (e) {
+        e.stopPropagation();
+        tocarSomPreview(this.dataset.som);
+      });
+    });
+    // ───────────────────────────────────────────────────────────────────────
+
+    // File info
+    function loadFileInfo() {
+      const logoImg = document.querySelector('.preview-image');
+      if (logoImg) {
+        logoImg.onload = function () {
+          document.getElementById('logo-dimensions').textContent =
+            `${this.naturalWidth}x${this.naturalHeight}px`;
+        };
+      }
+
+      const videoElement = document.querySelector('.preview-video');
+      if (videoElement) {
+        videoElement.addEventListener('loadedmetadata', function () {
+          const duration = Math.round(this.duration);
+          const minutes = Math.floor(duration / 60);
+          const seconds = duration % 60;
+          document.getElementById('video-duration').textContent =
+            `${minutes}:${seconds.toString().padStart(2, '0')}`;
+        });
+      }
+    }
+
+    loadFileInfo();
+    updatePreview();
+
+    // Form submission
+    form.addEventListener('submit', function () {
+      const submitBtn = form.querySelector('button[type="submit"]:not([name="reset_cores"])');
+      if (submitBtn) {
+        const originalText = submitBtn.innerHTML;
+        submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Salvando...';
+        submitBtn.disabled = true;
+
+        setTimeout(() => {
+          submitBtn.innerHTML = originalText;
+          submitBtn.disabled = false;
+        }, 5000);
+      }
+    });
+
+    // ========== PLAYLIST FUNCTIONALITY ==========
+
+    // Playlist state
+    let playlistVideos = [];
+    const MAX_VIDEOS = 10;
+    const MAX_FILE_SIZE = 50 * 1024 * 1024; // 50MB
+
+    // Elements
+    const videoUploadZone = document.getElementById('video-upload-zone');
+    const videoInput = document.getElementById('playlist-videos-input');
+    const videosSortable = document.getElementById('videos-sortable');
+    const videoCount = document.getElementById('video-count');
+    const emptyMsg = document.getElementById('empty-playlist-msg');
+    const clearPlaylistBtn = document.getElementById('clear-playlist');
+    const transitionRange = document.getElementById('transition_duration');
+    const transitionValue = document.getElementById('transition-duration-value');
+
+    // Drag & Drop handlers
+    if (videoUploadZone) {
+      ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+        videoUploadZone.addEventListener(eventName, preventDefaults, false);
+      });
+
+      function preventDefaults(e) {
+        e.preventDefault();
+        e.stopPropagation();
+      }
+
+      ['dragenter', 'dragover'].forEach(eventName => {
+        videoUploadZone.addEventListener(eventName, () => {
+          videoUploadZone.classList.add('drag-over');
+        }, false);
+      });
+
+      ['dragleave', 'drop'].forEach(eventName => {
+        videoUploadZone.addEventListener(eventName, () => {
+          videoUploadZone.classList.remove('drag-over');
+        }, false);
+      });
+
+      videoUploadZone.addEventListener('drop', handleDrop, false);
+    }
+
+    function handleDrop(e) {
+      const dt = e.dataTransfer;
+      const files = dt.files;
+      handleFiles(files);
+    }
+
+    // File input change
+    if (videoInput) {
+      videoInput.addEventListener('change', function (e) {
+        handleFiles(this.files);
+      });
+    }
+
+    // Handle files
+    function handleFiles(files) {
+      const fileArray = Array.from(files);
+
+      // Validate number of videos
+      if (playlistVideos.length + fileArray.length > MAX_VIDEOS) {
+        alert(`Você pode adicionar no máximo ${MAX_VIDEOS} vídeos. Atualmente você tem ${playlistVideos.length}.`);
+        return;
+      }
+
+      // Validate and add files
+      fileArray.forEach(file => {
+        // Check if it's a video
+        if (!file.type.startsWith('video/')) {
+          alert(`${file.name} não é um arquivo de vídeo válido.`);
+          return;
+        }
+
+        // Check file size
+        if (file.size > MAX_FILE_SIZE) {
+          alert(`${file.name} é muito grande. Tamanho máximo: 50MB`);
+          return;
+        }
+
+        // Add to playlist
+        addVideoToPlaylist(file);
+      });
+
+      // Clear input
+      if (videoInput) videoInput.value = '';
+    }
+
+    // Add video to playlist
+    function addVideoToPlaylist(file) {
+      const videoId = Date.now() + Math.random();
+      const videoURL = URL.createObjectURL(file);
+
+      const videoData = {
+        id: videoId,
+        file: file,
+        name: file.name,
+        size: file.size,
+        url: videoURL,
+        duration: 0
       };
+
+      playlistVideos.push(videoData);
+      renderPlaylist();
+
+      // Get video duration
+      const video = document.createElement('video');
+      video.preload = 'metadata';
+      video.onloadedmetadata = function () {
+        videoData.duration = Math.round(video.duration);
+        renderPlaylist();
+        URL.revokeObjectURL(video.src);
+      };
+      video.src = videoURL;
     }
-    
-    // Video duration
-    const videoElement = document.querySelector('video');
-    if (videoElement) {
-      videoElement.addEventListener('loadedmetadata', function() {
-        const duration = Math.round(this.duration);
-        const minutes = Math.floor(duration / 60);
-        const seconds = duration % 60;
-        document.getElementById('video-duration').textContent = 
-          `${minutes}:${seconds.toString().padStart(2, '0')}`;
+
+    // Render playlist
+    function renderPlaylist() {
+      if (!videosSortable) return;
+
+      if (playlistVideos.length === 0) {
+        videosSortable.innerHTML = '';
+        if (emptyMsg) emptyMsg.style.display = 'block';
+        if (videoCount) videoCount.textContent = '0';
+        return;
+      }
+
+      if (emptyMsg) emptyMsg.style.display = 'none';
+      if (videoCount) videoCount.textContent = playlistVideos.length;
+
+      videosSortable.innerHTML = playlistVideos.map((video, index) => `
+        <div class="video-item" data-id="${video.id}" draggable="true">
+          <i class="fas fa-grip-vertical drag-handle"></i>
+          <video class="video-thumbnail" src="${video.url}"></video>
+          <div class="video-info">
+            <div class="video-name" title="${video.name}">${video.name}</div>
+            <div class="video-meta">
+              ${formatFileSize(video.size)} • ${formatDuration(video.duration)}
+            </div>
+          </div>
+          <div class="video-actions">
+            <button type="button" class="btn btn-sm btn-outline-danger" onclick="removeVideo(${video.id})">
+              <i class="fas fa-trash"></i>
+            </button>
+          </div>
+        </div>
+      `).join('');
+
+      // Add drag & drop to video items
+      const videoItems = videosSortable.querySelectorAll('.video-item');
+      videoItems.forEach(item => {
+        item.addEventListener('dragstart', handleDragStart);
+        item.addEventListener('dragend', handleDragEnd);
+        item.addEventListener('dragover', handleDragOver);
+        item.addEventListener('drop', handleDropItem);
       });
     }
+
+    // Format file size
+    function formatFileSize(bytes) {
+      if (bytes === 0) return '0 Bytes';
+      const k = 1024;
+      const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+      const i = Math.floor(Math.log(bytes) / Math.log(k));
+      return Math.round(bytes / Math.pow(k, i) * 100) / 100 + ' ' + sizes[i];
+    }
+
+    // Format duration
+    function formatDuration(seconds) {
+      if (!seconds) return '0:00';
+      const mins = Math.floor(seconds / 60);
+      const secs = seconds % 60;
+      return `${mins}:${secs.toString().padStart(2, '0')}`;
+    }
+
+    // Remove video
+    window.removeVideo = function (videoId) {
+      playlistVideos = playlistVideos.filter(v => v.id !== videoId);
+      renderPlaylist();
+    };
+
+    // Clear playlist
+    if (clearPlaylistBtn) {
+      clearPlaylistBtn.addEventListener('click', function () {
+        if (confirm('Tem certeza que deseja remover todos os vídeos da playlist?')) {
+          playlistVideos = [];
+          renderPlaylist();
+        }
+      });
+    }
+
+    // Drag & Drop for reordering
+    let draggedItem = null;
+
+    function handleDragStart(e) {
+      draggedItem = this;
+      this.classList.add('dragging');
+      e.dataTransfer.effectAllowed = 'move';
+      e.dataTransfer.setData('text/html', this.innerHTML);
+    }
+
+    function handleDragEnd(e) {
+      this.classList.remove('dragging');
+      draggedItem = null;
+    }
+
+    function handleDragOver(e) {
+      if (e.preventDefault) {
+        e.preventDefault();
+      }
+      e.dataTransfer.dropEffect = 'move';
+      return false;
+    }
+
+    function handleDropItem(e) {
+      if (e.stopPropagation) {
+        e.stopPropagation();
+      }
+
+      if (draggedItem !== this) {
+        const allItems = Array.from(videosSortable.querySelectorAll('.video-item'));
+        const draggedIndex = allItems.indexOf(draggedItem);
+        const targetIndex = allItems.indexOf(this);
+
+        // Reorder array
+        const item = playlistVideos[draggedIndex];
+        playlistVideos.splice(draggedIndex, 1);
+        playlistVideos.splice(targetIndex, 0, item);
+
+        renderPlaylist();
+      }
+
+      return false;
+    }
+
+    // Transition duration range
+    if (transitionRange && transitionValue) {
+      transitionRange.addEventListener('input', function () {
+        transitionValue.textContent = this.value + 's';
+      });
+    }
+
+    // Initialize playlist (if needed, load existing videos from server)
+    renderPlaylist();
   }
-  
-  loadFileInfo();
-  
-  console.log('Página EdTelas inicializada com sucesso!');
-}
 
-// Executar quando o DOM estiver pronto
-document.addEventListener('DOMContentLoaded', initializeEdTelasPage);
-
-// Executar também quando a página for carregada via navegação (SPA)
-if (document.readyState === 'loading') {
+  // Initialize
   document.addEventListener('DOMContentLoaded', initializeEdTelasPage);
-} else {
-  // Se o DOM já estiver pronto, executar imediatamente
-  initializeEdTelasPage();
-}
-
-// Executar quando a página for focada (voltar de outra aba)
-window.addEventListener('focus', function() {
-  console.log('Página focada, verificando inicialização...');
-  setTimeout(initializeEdTelasPage, 100);
-});
-
-// Executar quando a página for visível novamente
-document.addEventListener('visibilitychange', function() {
-  if (!document.hidden) {
-    console.log('Página visível novamente, verificando inicialização...');
-    setTimeout(initializeEdTelasPage, 100);
+  if (document.readyState !== 'loading') {
+    initializeEdTelasPage();
   }
-});
 </script>
 {% endblock %}

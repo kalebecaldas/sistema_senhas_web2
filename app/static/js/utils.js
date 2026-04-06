@@ -125,9 +125,11 @@ class Formatters {
     }
 
     static formatTime(date) {
+        if (!date) return '';
         return new Date(date).toLocaleTimeString('pt-BR', { 
             hour: '2-digit', 
-            minute: '2-digit' 
+            minute: '2-digit',
+            timeZone: 'America/Manaus'
         });
     }
 
@@ -470,10 +472,13 @@ window.SistemaUtils = {
     },
     datetime: {
         formatTime: function(date) {
-            return date.toLocaleTimeString('pt-BR', {
+            if (!date) return '';
+            const d = date instanceof Date ? date : new Date(date);
+            return d.toLocaleTimeString('pt-BR', {
                 hour: '2-digit',
                 minute: '2-digit',
-                second: '2-digit'
+                second: '2-digit',
+                timeZone: 'America/Manaus'
             });
         },
 

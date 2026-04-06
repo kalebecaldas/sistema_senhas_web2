@@ -28,9 +28,14 @@ class Config:
         }
     }
     
-    # Configurações TTS
-    TTS_AZURE_KEY = "1GrRULjTQvppqKpUK2GSKc6YRwmdNdlDW4YywGXMfL6LkpfPU004JQQJ99BDACZoyfiXJ3w3AAAYACOGsj0S"
-    TTS_AZURE_ENDPOINT = "https://brazilsouth.tts.speech.microsoft.com"
+    # Configurações TTS (chave só via ambiente — nunca commitar segredos)
+    TTS_AZURE_KEY = os.environ.get('TTS_AZURE_KEY', '').strip()
+    TTS_AZURE_ENDPOINT = os.environ.get(
+        'TTS_AZURE_ENDPOINT', 'https://brazilsouth.tts.speech.microsoft.com'
+    ).rstrip('/')
+    TTS_AZURE_COGNITIVE_BASE = os.environ.get(
+        'TTS_AZURE_COGNITIVE_BASE', 'https://brazilsouth.api.cognitive.microsoft.com/'
+    )
     TTS_DEFAULT_VOICE = "pt-BR-FranciscaNeural"
     TTS_TIMEOUT = 10
     
@@ -65,9 +70,11 @@ class Config:
     LOCKOUT_DURATION = timedelta(minutes=15)
     
     # Configurações de upload
-    MAX_CONTENT_LENGTH = 16 * 1024 * 1024  # 16MB
+    # Limite de tamanho para uploads (500MB para suportar vídeos)
+    # 500 MB = 500 * 1024 * 1024 bytes
+    MAX_CONTENT_LENGTH = 500 * 1024 * 1024  # 500MB
     UPLOAD_FOLDER = 'app/static'
-    ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif', 'mp4', 'avi', 'mov'}
+    ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif', 'mp4', 'avi', 'mov', 'webm', 'mkv'}
     
     # Configurações de cache
     CACHE_TYPE = 'simple'

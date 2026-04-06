@@ -1,558 +1,681 @@
-<!-- templates/display.html -->
 <!DOCTYPE html>
 <html lang="pt-br">
+
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Display de Senhas</title>
-  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
-  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700;900&display=swap" rel="stylesheet">
-
+  <title>Welcome Center - Display</title>
+  <!-- OTIMIZADO PARA 4GB RAM: Sem fontes externas, CSS minimalista -->
   <style>
     * {
+      margin: 0;
+      padding: 0;
       box-sizing: border-box;
     }
 
     html, body {
-      margin: 0; 
-      padding: 0; 
-      height: 100%;
-      background: {{ config.cor_fundo }};
-      color: {{ config.cor_texto }};
-      font-family: 'Montserrat', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-      overflow: hidden;
-    }
-
-    body {
-      display: flex;
-      flex-direction: column;
-    }
-
-    /* Header com título e hora */
-    .header-container {
-      height: 80px;
-      background: linear-gradient(135deg, {{ config.cor_rodape }}, {{ config.cor_rodape }}dd);
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      padding: 0 2rem;
-      box-shadow: 0 2px 10px rgba(0,0,0,0.3);
-      position: relative;
-      z-index: 10;
-    }
-
-    .header-title {
-      font-size: 2.2rem;
-      font-weight: 700;
-      color: {{ config.cor_bemvindo }};
-      text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
-      letter-spacing: 1px;
-    }
-
-    .header-time {
-      font-size: 2rem;
-      font-weight: 600;
-      color: {{ config.cor_hora }};
-      text-shadow: 1px 1px 2px rgba(0,0,0,0.3);
-      min-width: 120px;
-      text-align: center;
-      background: rgba(255,255,255,0.1);
-      padding: 0.5rem 1rem;
-      border-radius: 8px;
-      backdrop-filter: blur(10px);
-    }
-
-    /* Container principal */
-    .painel-container {
-      flex: 1;
-      display: flex;
-      width: 100vw;
-      max-width: 100vw;
-      height: calc(100vh - 180px);
-      overflow: hidden;
-    }
-
-    /* Área do vídeo */
-    #video-lateral {
-      flex: 2 1 0;
-      min-width: 0;
-      height: 100%;
-      overflow: hidden;
-      position: relative;
-    }
-
-    #video-lateral::before {
-      content: '';
-      position: absolute;
-      top: 0;
-      left: 0;
-      right: 0;
-      bottom: 0;
-      background: linear-gradient(45deg, rgba(0,0,0,0.2), transparent);
-      z-index: 1;
-      pointer-events: none;
-    }
-
-    #video-lateral video {
       width: 100%;
       height: 100%;
-      object-fit: cover;
-      filter: brightness(1.1) contrast(1.1);
-    }
-
-    /* Coluna de senhas */
-    .senha-coluna {
-      flex: 1 1 480px;
-      max-width: 650px;
-      min-width: 400px;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: flex-start;
-      padding: 2rem 1rem;
-      background: linear-gradient(180deg, 
-        rgba(0, 0, 0, 0.95) 0%, 
-        rgba(20, 20, 20, 0.9) 50%, 
-        rgba(0, 0, 0, 0.95) 100%);
-      border-left: 4px solid {{ config.contorno_senha }};
-      border-top: none;
-      border-bottom: none;
-      box-shadow: -5px 0 15px rgba(0,0,0,0.5);
-      position: relative;
-      overflow-y: auto;
-    }
-
-    .senha-coluna::before {
-      content: '';
-      position: absolute;
-      top: 0;
-      left: 0;
-      right: 0;
-      height: 16px;
-      background: linear-gradient(180deg, rgba(0,0,0,0.7), transparent);
-      z-index: 2;
-    }
-
-    .senha-coluna::after {
-      content: '';
-      position: absolute;
-      bottom: 0;
-      left: 0;
-      right: 0;
-      height: 16px;
-      background: linear-gradient(0deg, rgba(0,0,0,0.7), transparent);
-      z-index: 2;
-    }
-
-    /* Título da coluna */
-    .senha-titulo {
-      font-size: 2.4rem;
-      font-weight: 700;
-      color: {{ config.cor_bemvindo }};
-      text-align: center;
-      margin-bottom: 2rem;
-      text-shadow: 2px 2px 4px rgba(0,0,0,0.8);
-      letter-spacing: 2px;
-      position: relative;
-      z-index: 3;
-    }
-
-    .senha-titulo::after {
-      content: '';
-      position: absolute;
-      bottom: -10px;
-      left: 50%;
-      transform: translateX(-50%);
-      width: 60px;
-      height: 3px;
-      background: {{ config.contorno_senha }};
-      border-radius: 2px;
-    }
-
-    /* Itens de senha */
-    .senha-item {
-      font-size: 2.6rem;
-      font-weight: 600;
-      padding: 1.2rem 1.5rem;
-      width: 98%;
-      max-width: 580px;
-      min-width: 400px;
-      margin-left: auto;
-      margin-right: auto;
-      text-align: left;
-      background: linear-gradient(135deg, 
-        rgba(40, 40, 40, 0.97) 0%, 
-        rgba(30, 30, 30, 0.93) 100%);
-      border: 2px solid {{ config.linha_senha }};
-      border-radius: 18px;
-      margin: 1.2rem 0;
-      box-shadow: 0 2px 10px rgba(0,0,0,0.18);
-      transition: all 0.3s cubic-bezier(.4,0,.2,1);
-      position: relative;
-      z-index: 3;
-      backdrop-filter: blur(3px);
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 1.5rem;
-      overflow: visible;
-    }
-
-    .senha-item:hover {
-      transform: translateY(-2px);
-      box-shadow: 0 6px 12px rgba(0,0,0,0.4);
-    }
-
-    .senha-item.ultima {
-      font-size: 3.6rem;
-      color: {{ config.destaque_senha or '#2196f3' }};
-      font-weight: 800;
-      background: linear-gradient(135deg, 
-        rgba(60, 0, 0, 0.97) 0%, 
-        rgba(30, 0, 0, 0.93) 100%);
-      border: 3px solid {{ config.destaque_senha or '#2196f3' }};
-      box-shadow: 0 0 10px {{ config.destaque_senha or '#2196f3' }}, 0 2px 8px rgba(0,0,0,0.12);
-      animation: pulse 2s infinite;
-    }
-
-    .senha-item.ultima span {
-      animation: piscar 1.5s infinite;
-      display: inline-block;
-      text-shadow: 0 0 4px {{ config.destaque_senha or '#2196f3' }};
-    }
-
-    .senha-item .senha-label {
-      font-weight: 700;
-      font-size: 2.6rem;
-      letter-spacing: 1px;
-      flex: 1 1 auto;
-      white-space: nowrap;
-      overflow: visible;
-      text-overflow: clip;
-      min-width: 0;
-      word-break: keep-all;
-    }
-    .senha-item .guiche-label {
-      font-size: 1.5rem;
-      font-weight: 600;
-      color: {{ config.destaque_senha or '#2196f3' }};
-      background: rgba(33,150,243,0.08);
-      border-radius: 8px;
-      padding: 0.4em 1.1em;
-      margin-left: 0.5em;
-      min-width: 90px;
-      text-align: center;
-      letter-spacing: 1px;
-      box-shadow: 0 1px 4px rgba(0,0,0,0.08);
-      border: 1.5px solid {{ config.destaque_senha or '#2196f3' }};
-      display: inline-block;
-    }
-    .senha-item.ultima .guiche-label {
-      font-size: 1.7rem;
-      font-weight: 800;
-      background: rgba(33,150,243,0.18);
-      border-width: 2px;
-    }
-
-    @keyframes piscar {
-      0%, 100% { 
-        opacity: 1; 
-        transform: scale(1);
-      }
-      50% { 
-        opacity: 0.7; 
-        transform: scale(1.05);
-      }
-    }
-
-    @keyframes pulse {
-      0%, 100% {
-        box-shadow: 0 0 20px rgba(255, 0, 0, 0.3);
-      }
-      50% {
-        box-shadow: 0 0 30px rgba(255, 0, 0, 0.6);
-      }
-    }
-
-    /* Rodapé */
-    .rodape-container {
-      height: 100px;
-      background: linear-gradient(135deg, {{ config.cor_rodape }}, {{ config.cor_rodape }}ee);
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      padding: 0 2rem;
-      box-shadow: 0 -2px 10px rgba(0,0,0,0.3);
-      position: relative;
-      z-index: 10;
-    }
-
-    .logo-placeholder {
-      display: flex;
-      align-items: center;
-    }
-
-    .logo-placeholder img {
-      height: 70px;
-      width: auto;
-      filter: drop-shadow(2px 2px 4px rgba(0,0,0,0.3));
-      transition: transform 0.3s ease;
-    }
-
-    .logo-placeholder img:hover {
-      transform: scale(1.05);
-    }
-
-    .marquee-wrapper {
-      flex: 1;
       overflow: hidden;
-      margin: 0 2rem;
-      position: relative;
+      /* Fontes do sistema (sem download externo = economia de RAM) */
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif;
+      background: #f8fafc;
+      /* Otimizações agressivas para baixa RAM */
+      text-rendering: optimizeSpeed;
+      -webkit-font-smoothing: subpixel-antialiased;
+      image-rendering: -webkit-optimize-contrast;
     }
 
-    .marquee-wrapper::before,
-    .marquee-wrapper::after {
-      content: '';
-      position: absolute;
-      top: 0;
-      bottom: 0;
-      width: 50px;
-      z-index: 2;
-      pointer-events: none;
-    }
-
-    .marquee-wrapper::before {
-      left: 0;
-      background: linear-gradient(90deg, {{ config.cor_rodape }}, transparent);
-    }
-
-    .marquee-wrapper::after {
-      right: 0;
-      background: linear-gradient(270deg, {{ config.cor_rodape }}, transparent);
-    }
-
-    .marquee-text {
-      white-space: nowrap;
-      padding-left: 50%;
-      animation: marquee 30s linear infinite;
-      font-size: 2.2rem;
-      font-weight: 600;
-      color: {{ config.cor_bemvindo }};
-      text-shadow: 1px 1px 2px rgba(0,0,0,0.5);
-      letter-spacing: 1px;
-    }
-
-    @keyframes marquee {
-      0% { transform: translateX(100%); }
-      100% { transform: translateX(-100%); }
-    }
-
-    /* Overlay de senha chamada */
-    #senha-chamada {
-      position: fixed;
-      top: 0; 
-      left: 0;
-      width: 100vw; 
-      height: 100vh;
-      background: linear-gradient(135deg, 
-        rgba(0,0,0,0.95) 0%, 
-        rgba(20,0,0,0.9) 100%);
-      color: white;
-      display: none; 
-      opacity: 0;
-      align-items: center; 
-      justify-content: center;
-      font-size: 12rem; 
-      z-index: 1000;
-      font-weight: 900;
-      transition: all 0.5s ease;
-      text-align: center;
-      backdrop-filter: blur(10px);
-    }
-
-    #senha-chamada.show {
-      display: flex;
-      opacity: 1;
-      animation: chamadaEntrada 0.5s ease-out;
-    }
-
-    @keyframes chamadaEntrada {
-      0% {
-        opacity: 0;
-        transform: scale(0.8);
-      }
-      100% {
-        opacity: 1;
-        transform: scale(1);
-      }
-    }
-
-    /* Overlay de reconexão */
+    /* Reconnect Overlay Styles - OTIMIZADO (sem backdrop-filter pesado) */
     #reconnect-overlay {
       position: fixed;
       inset: 0;
-      background: linear-gradient(135deg, 
-        rgba(0,0,0,0.9) 0%, 
-        rgba(40,0,0,0.8) 100%);
+      background: rgba(0, 0, 0, 0.9); /* Cor sólida ao invés de gradiente */
       display: none;
       align-items: center;
       justify-content: center;
       flex-direction: column;
       color: #fff;
       z-index: 1500;
-      font-size: 2.2rem;
-      backdrop-filter: blur(15px);
-    }
-
-    .reconnect-message {
-      text-align: center;
-      margin-bottom: 2rem;
-      text-shadow: 2px 2px 4px rgba(0,0,0,0.8);
+      font-size: 1.5rem;
+      /* backdrop-filter removido - muito pesado para 4GB RAM */
     }
 
     .reconnect-progress {
       width: 80%;
       max-width: 600px;
-      background: rgba(255,255,255,0.1);
-      border-radius: 10px;
+      background: rgba(255, 255, 255, 0.1);
+      border-radius: 4px;
       overflow: hidden;
-      height: 12px;
-      box-shadow: inset 0 2px 4px rgba(0,0,0,0.3);
+      height: 8px;
+      margin-top: 1rem;
     }
 
     .reconnect-fill {
-      width: 0;
+      width: 100%;
       height: 100%;
-      background: linear-gradient(90deg, #ffc107, #ff9800);
-      animation: infinite-fill 2s linear infinite;
-      border-radius: 10px;
+      background: #ff9800; /* Cor sólida ao invés de gradiente */
+      /* Animação removida - economia de CPU */
     }
 
-    @keyframes infinite-fill {
-      0% { width: 0; }
-      100% { width: 100%; }
+    /* Full Screen Call Overlay - ULTRA OTIMIZADO */
+    #senha-chamada {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      background: rgba(0, 0, 0, 0.95);
+      color: white;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 9999;
+      opacity: 0;
+      visibility: hidden;
+      transition: opacity 0.2s, visibility 0.2s; /* Transição mais rápida */
+      /* backdrop-filter removido - muito pesado */
     }
 
-    /* Scrollbar personalizada */
-    .senha-coluna::-webkit-scrollbar {
-      width: 8px;
+    #senha-chamada.show {
+      opacity: 1;
+      visibility: visible;
     }
 
-    .senha-coluna::-webkit-scrollbar-track {
-      background: rgba(0,0,0,0.3);
-      border-radius: 4px;
-    }
-
-    .senha-coluna::-webkit-scrollbar-thumb {
-      background: {{ config.contorno_senha }};
-      border-radius: 4px;
-    }
-
-    .senha-coluna::-webkit-scrollbar-thumb:hover {
-      background: {{ config.destaque_senha }};
-    }
-
-    /* Responsividade */
-    @media (max-width: 1200px) {
-      .header-title {
-        font-size: 1.8rem;
-      }
-      
-      .header-time {
-        font-size: 1.6rem;
-      }
-      
-      .senha-titulo {
-        font-size: 2rem;
-      }
-      
-      .senha-item {
-        font-size: 2.4rem;
-        max-width: 520px;
-        min-width: 350px;
-      }
-      
-      .senha-item.ultima {
-        font-size: 3rem;
-      }
-      
-      .senha-coluna {
-        max-width: 580px;
-        min-width: 380px;
-      }
-    }
-
-    @media (max-width: 768px) {
-      .painel-container {
-        flex-direction: column;
-      }
-      
-      #video-lateral {
-        width: 100%;
-        height: 40%;
-      }
-      
-      .senha-coluna {
-        width: 100%;
-        height: 60%;
-      }
-      
-      .header-container {
-        height: 60px;
-        padding: 0 1rem;
-      }
-      
-      .rodape-container {
-        height: 80px;
-        padding: 0 1rem;
-      }
-    }
+    /* Animação pulse-text removida - economia de CPU */
   </style>
 </head>
+
 <body>
-  <!-- Reconexão -->
+  <!-- Reconnect Overlay -->
   <div id="reconnect-overlay">
-    <div class="reconnect-message">
-      <div style="font-size: 3rem; margin-bottom: 1rem;">📡</div>
-      <div>Conexão perdida</div>
-      <div style="font-size: 1.4rem; opacity: 0.8; margin-top: 0.5rem;">Aguardando o servidor...</div>
+    <div class="text-center">
+      <div style="font-size: 3rem;">⚠️</div>
+      <div style="margin-top: 1rem; font-weight: bold;">Conexão perdida</div>
+      <div style="margin-top: 0.5rem; opacity: 0.8;">Aguardando o servidor...</div>
     </div>
     <div class="reconnect-progress">
       <div class="reconnect-fill"></div>
     </div>
   </div>
 
-  <!-- Chamada -->
+  <!-- Full Screen Call Overlay -->
   <div id="senha-chamada"></div>
 
-  <!-- Header -->
-  <div class="header-container">
-    <div class="header-title">SISTEMA DE SENHAS</div>
-    <div class="header-time" id="hora"></div>
+  <!-- Unmute Button -->
+  <button id="unmute-btn" style="display: none;">
+    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+        d="M15.536 8.464a5 5 0 010 7.072m2.828-9.9a9 9 0 010 12.728M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z" />
+    </svg>
+    <span>Ativar som</span>
+  </button>
+
+  <!-- Main Container -->
+  <div class="main-container">
+
+    <!-- LEFT COLUMN: Header + Video + Footer (70% width) -->
+    <div class="left-column">
+
+      <!-- Header -->
+      <header class="header">
+        <div class="header-left">
+          <!-- Logo -->
+          <div class="logo-box">
+            {% if config.logo_path %}
+            <img src="{{ url_for('static', filename=config.logo_path) }}" alt="Logo" />
+            {% else %}
+            <svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" fill="none" viewBox="0 0 24 24" stroke="#cbd5e1">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
+                d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+            </svg>
+            {% endif %}
+          </div>
+
+          <!-- Welcome Text -->
+          <div class="welcome-text">
+            <h1>Bem-vindo</h1>
+            <div class="status">
+              <span class="status-dot"></span>
+              <p>Sistema de Senhas</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Clock -->
+        <div class="clock-box">
+          <div id="clock-time">--:--</div>
+          <div id="clock-date">---</div>
+        </div>
+      </header>
+
+      <!-- Video Area -->
+      <div class="video-wrapper">
+        <div id="video-container">
+          {% if config.video_path %}
+          <!-- Main video -->
+          <video id="main-video" autoplay loop muted playsinline preload="auto">
+            <source src="{{ url_for('static', filename=config.video_path) }}" />
+            Seu navegador não suporta vídeo HTML5.
+          </video>
+          {% else %}
+          <!-- Placeholder quando não há vídeo -->
+          <div style="display: flex; align-items: center; justify-content: center; height: 100%; color: #64748b; text-align: center; padding: 2rem;">
+            <div>
+              <svg xmlns="http://www.w3.org/2000/svg" width="80" height="80" fill="none" viewBox="0 0 24 24" stroke="currentColor" style="margin: 0 auto 1rem; opacity: 0.3;">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" />
+              </svg>
+              <p style="font-size: 1.5rem; opacity: 0.5;">Configure um vídeo em Editar Telas</p>
+            </div>
+          </div>
+          {% endif %}
+        </div>
+      </div>
+
+      <!-- Footer Info -->
+      <div class="footer-info">
+        <div class="info-badge">
+          <span class="badge-dot"></span>
+          <span>INFO</span>
+        </div>
+        <div class="marquee-wrapper">
+          <div id="announcement-text" class="marquee-text">
+            {{ config.frase_bemvindo }}
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- RIGHT COLUMN: Queue (30% width) -->
+    <div class="right-column">
+
+      <!-- NOW SERVING -->
+      <div class="now-serving">
+        <h2 class="now-serving-label">CHAMANDO AGORA</h2>
+        <div id="now-serving-number" class="now-serving-number">---</div>
+        <div class="now-serving-desk">
+          <span class="desk-dot"></span>
+          <span id="now-serving-desk">---</span>
+        </div>
+      </div>
+
+      <!-- RECENT LIST -->
+      <div class="recent-list-box">
+        <h3 class="recent-list-title">
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+              d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+          </svg>
+          ÚLTIMAS CHAMADAS
+        </h3>
+
+        <div id="recent-list" class="recent-list">
+          <div class="empty-state">
+            <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
+                d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
+            </svg>
+            <span>Aguardando...</span>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
   </div>
 
-  <!-- Conteúdo -->
-  <div class="painel-container">
-    <div id="video-lateral">
-      <video autoplay muted loop>
-        <source src="{{ url_for('static', filename=config.video_path) }}" type="video/mp4" />
-      </video>
-    </div>
-    <div class="senha-coluna">
-      <div class="senha-titulo">SENHAS CHAMADAS</div>
-      <div id="lista-senhas"></div>
-    </div>
-  </div>
+  <style>
+    /* ========== LAYOUT ========== */
+    .main-container {
+      display: flex;
+      width: 100vw;
+      height: 100vh;
+      gap: 0.5rem;
+      padding: 0.5rem;
+      overflow: hidden;
+    }
 
-  <!-- Rodapé -->
-  <div class="rodape-container">
-    <div class="logo-placeholder">
-      <img src="{{ url_for('static', filename=config.logo_path) }}" alt="Logo IAAM" />
-    </div>
-    <div class="marquee-wrapper">
-      <div class="marquee-text">{{ config.frase_bemvindo }}</div>
-    </div>
-  </div>
+    .left-column {
+      flex: 1 1 70%;
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+      min-width: 0;
+    }
+
+    .right-column {
+      flex: 0 0 28%;
+      display: flex;
+      flex-direction: column;
+      gap: 0.75rem;
+      min-width: 260px;
+      max-width: 380px;
+    }
+
+    /* ========== HEADER ========== */
+    .header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: rgba(255, 255, 255, 0.95);
+      padding: 0.5rem 1rem;
+      border-radius: 1rem;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.08);
+      flex-shrink: 0;
+    }
+
+    .header-left {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      min-width: 0;
+      flex: 1;
+    }
+
+    .logo-box {
+      width: 60px;
+      height: 60px;
+      background: white;
+      border-radius: 0.875rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.06);
+      padding: 0.5rem;
+      flex-shrink: 0;
+    }
+
+    .logo-box img {
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+    }
+
+    .welcome-text {
+      min-width: 0;
+      flex: 1;
+    }
+
+    .welcome-text h1 {
+      font-size: 2rem;
+      font-weight: 700;
+      color: #1e293b;
+      line-height: 1;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .status {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      margin-top: 0.25rem;
+    }
+
+    .status-dot {
+      width: 8px;
+      height: 8px;
+      background: #10b981;
+      border-radius: 50%;
+      flex-shrink: 0;
+    }
+
+    .status p {
+      color: #64748b;
+      font-size: 0.95rem;
+      font-weight: 500;
+      white-space: nowrap;
+    }
+
+    .clock-box {
+      text-align: right;
+      padding-left: 1rem;
+      border-left: 1px solid #e2e8f0;
+      flex-shrink: 0;
+    }
+
+    #clock-time {
+      font-size: 2.5rem;
+      font-weight: 300;
+      color: #1e293b;
+      line-height: 1;
+      white-space: nowrap;
+    }
+
+    #clock-date {
+      font-size: 0.75rem;
+      font-weight: 600;
+      color: #f43f5e;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      margin-top: 0.25rem;
+      white-space: nowrap;
+    }
+
+    /* ========== VIDEO ========== */
+    .video-wrapper {
+      flex: 1;
+      position: relative;
+      border-radius: 1.5rem;
+      overflow: hidden;
+      background: #000;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15); /* Simplificada para 4GB RAM */
+      border: 3px solid #f43f5e;
+      min-height: 0;
+      /* Aceleração de hardware */
+      transform: translateZ(0);
+      will-change: transform;
+    }
+
+    #video-container {
+      position: relative;
+      width: 100%;
+      height: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: #000;
+    }
+
+    #main-video {
+      position: relative;
+      z-index: 10;
+      width: 100%;
+      height: 100%;
+      max-width: 100%;
+      max-height: 100%;
+      object-fit: contain;
+      display: block;
+      visibility: visible;
+      opacity: 1;
+      /* Otimizações críticas de performance */
+      transform: translateZ(0);
+      backface-visibility: hidden;
+      -webkit-backface-visibility: hidden;
+      will-change: transform;
+      /* Qualidade de renderização */
+      image-rendering: -webkit-optimize-contrast;
+      image-rendering: crisp-edges;
+    }
+
+    /* ========== FOOTER INFO ========== */
+    .footer-info {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      background: rgba(255, 255, 255, 0.95);
+      padding: 0.5rem 1rem;
+      border-radius: 1rem;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.08);
+      flex-shrink: 0;
+      overflow: hidden;
+    }
+
+    .info-badge {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      background: #fff1f2;
+      padding: 0.4rem 0.875rem;
+      border-radius: 9999px;
+      border: 1px solid #fecdd3;
+      flex-shrink: 0;
+    }
+
+    .badge-dot {
+      width: 8px;
+      height: 8px;
+      background: #f43f5e;
+      border-radius: 50%;
+      flex-shrink: 0;
+    }
+
+    .info-badge span:last-child {
+      font-size: 0.7rem;
+      font-weight: 700;
+      color: #e11d48;
+      letter-spacing: 0.08em;
+      white-space: nowrap;
+    }
+
+    .marquee-wrapper {
+      flex: 1;
+      overflow: hidden;
+      position: relative;
+      min-width: 0;
+    }
+
+    .marquee-text {
+      font-size: 1rem;
+      font-weight: 500;
+      color: #475569;
+      white-space: nowrap;
+      /* Animação marquee removida - economia de CPU */
+    }
+
+    /* ========== NOW SERVING - OTIMIZADO ========== */
+    .now-serving {
+      background: #fff1f2; /* Cor sólida ao invés de gradiente */
+      border-radius: 1.25rem;
+      padding: 1rem;
+      text-align: center;
+      box-shadow: 0 2px 6px rgba(244, 63, 94, 0.1); /* Sombra mais leve */
+      border: 2px solid #fecdd3;
+      overflow: hidden;
+    }
+
+    .now-serving-label {
+      font-size: 0.65rem;
+      font-weight: 700;
+      color: #fb7185;
+      letter-spacing: 0.15em;
+      margin-bottom: 0.75rem;
+    }
+
+    .now-serving-number {
+      font-size: 4rem;
+      font-weight: 700;
+      color: #e11d48;
+      line-height: 1;
+      margin-bottom: 1rem;
+      word-break: break-word;
+      overflow-wrap: break-word;
+      max-width: 100%;
+      /* Animação removida para performance */
+    }
+
+    .now-serving-desk {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      background: rgba(255, 255, 255, 0.8);
+      padding: 0.5rem 1.5rem;
+      border-radius: 9999px;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+      border: 1px solid #fecdd3;
+      max-width: 100%;
+    }
+
+    .desk-dot {
+      width: 10px;
+      height: 10px;
+      background: #f43f5e;
+      border-radius: 50%;
+      flex-shrink: 0;
+    }
+
+    .now-serving-desk span:last-child {
+      font-size: 1.5rem;
+      font-weight: 600;
+      color: #be123c;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    /* ========== RECENT LIST ========== */
+    .recent-list-box {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      background: rgba(255, 255, 255, 0.95);
+      border-radius: 1.25rem;
+      padding: 1rem 0.875rem;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.08);
+      overflow: hidden;
+      min-height: 0;
+    }
+
+    .recent-list-title {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      font-size: 0.65rem;
+      font-weight: 700;
+      color: #94a3b8;
+      letter-spacing: 0.08em;
+      margin-bottom: 1rem;
+      flex-shrink: 0;
+    }
+
+    .recent-list {
+      flex: 1;
+      overflow-y: auto;
+      overflow-x: hidden;
+      padding-right: 0.5rem;
+      min-height: 0;
+    }
+
+    .recent-list::-webkit-scrollbar {
+      width: 4px;
+    }
+
+    .recent-list::-webkit-scrollbar-track {
+      background: #f1f5f9;
+      border-radius: 10px;
+    }
+
+    .recent-list::-webkit-scrollbar-thumb {
+      background: #cbd5e1;
+      border-radius: 10px;
+    }
+
+    .empty-state {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      height: 100%;
+      gap: 0.75rem;
+      color: #cbd5e1;
+      font-size: 1rem;
+      opacity: 0.6;
+      padding: 1rem;
+    }
+
+    .recent-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 1rem 0.75rem;
+      border-bottom: 1px solid #f1f5f9;
+      transition: background 0.2s;
+      gap: 0.75rem;
+    }
+
+    .recent-item:hover {
+      background: rgba(248, 250, 252, 0.5);
+    }
+
+    .recent-item:last-child {
+      border-bottom: none;
+    }
+
+    .recent-item-senha {
+      font-size: 2.25rem;
+      font-weight: 700;
+      color: #1e293b;
+      line-height: 1;
+      word-break: break-word;
+    }
+
+    .recent-item-label {
+      font-size: 0.625rem;
+      font-weight: 600;
+      color: #cbd5e1;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      margin-top: 0.25rem;
+    }
+
+    .recent-item-desk {
+      text-align: right;
+      flex-shrink: 0;
+    }
+
+    .recent-item-guiche {
+      display: flex;
+      align-items: center;
+      justify-content: flex-end;
+      gap: 0.4rem;
+      font-size: 1.125rem;
+      font-weight: 500;
+      color: #64748b;
+      white-space: nowrap;
+    }
+
+    .recent-item-dot {
+      width: 6px;
+      height: 6px;
+      background: #10b981;
+      border-radius: 50%;
+      flex-shrink: 0;
+    }
+
+    .recent-item-time {
+      font-size: 0.625rem;
+      font-weight: 500;
+      color: #cbd5e1;
+      margin-top: 0.25rem;
+      display: flex;
+      align-items: center;
+      justify-content: flex-end;
+      gap: 0.25rem;
+    }
+
+    /* ========== UNMUTE BUTTON ========== */
+    #unmute-btn {
+      position: fixed;
+      bottom: 2rem;
+      right: 2rem;
+      z-index: 50;
+      background: #f43f5e;
+      color: white;
+      padding: 1rem 1.5rem;
+      border-radius: 9999px;
+      border: none;
+      box-shadow: 0 10px 25px rgba(244, 63, 94, 0.3);
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      cursor: pointer;
+      transition: background 0.3s;
+    }
+
+    #unmute-btn:hover {
+      background: #e11d48;
+    }
+
+    #unmute-btn span {
+      font-weight: 600;
+      font-size: 1rem;
+    }
+
+    /* ========== ANIMATIONS ========== */
+    /* TODAS AS ANIMAÇÕES REMOVIDAS PARA ECONOMIA DE CPU/RAM EM PCS COM 4GB */
+  </style>
 
   <!-- Config -->
   <script>
@@ -561,39 +684,13 @@
       filaJsonUrl: "{{ url_for('main.fila_json') }}",
       pingUrl: "{{ url_for('main.ping') }}",
       vozSelecionada: "{{ config.voz_azure or 'pt-BR-FranciscaNeural' }}",
-      destaqueSenha: "{{ config.destaque_senha }}"
+      destaqueSenha: "{{ config.destaque_senha }}",
+      somChamada: "{{ config.som_chamada or 'sino_suave' }}"
     };
   </script>
 
-  <!-- Reconnect logic -->
-  <script>
-    const overlay = document.getElementById('reconnect-overlay');
-    const videoEl = document.querySelector('#video-lateral video');
-    let offline = false;
-
-    async function checkServer() {
-      try {
-        const res = await fetch(window.DISPLAY_CONFIG.pingUrl, { cache: 'no-store' });
-        if (!res.ok) throw new Error();
-        if (offline) {
-          overlay.style.display = 'none';
-          videoEl && videoEl.play();
-          offline = false;
-        }
-      } catch {
-        if (!offline) {
-          offline = true;
-          overlay.style.display = 'flex';
-          videoEl && videoEl.pause();
-        }
-      }
-    }
-
-    setInterval(checkServer, 2000);
-    checkServer();
-  </script>
-
   <!-- JS -->
-  <script src="{{ url_for('static', filename='js/display.js') }}?v=1.7"></script>
+  <script src="{{ url_for('static', filename='js/display.js') }}?v=2.0"></script>
 </body>
+
 </html>

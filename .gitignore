@@ -74,3 +74,11 @@ Thumbs.db
 # Arquivos de teste
 test_*.py
 *_test.py
+
+# Artefatos locais / mídia pesada
+__MACOSX/
+backup_*/
+*.bak
+app/static/videos/*.mp4
+app/static/videos/*.mov
+welcome-center-queue-display/
